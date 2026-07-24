@@ -134,6 +134,28 @@ export interface AuditLogEntry {
 
 export type AdminRole = 'Super Admin' | 'Finanzas' | 'Despacho y Soporte' | 'Verificador';
 
+export interface CompletedService {
+  id: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  driverId: string;
+  driverName: string;
+  driverCategory: DriverCategory;
+  clientId: string;
+  clientName: string;
+  clientPhone: string;
+  origin: string;
+  destination: string;
+  fareUSD: number;
+  fareVES: number;
+  commissionPercent: number;
+  commissionUSD: number;
+  commissionVES: number;
+  driverEarningsUSD: number;
+  paymentMethod: 'Efectivo' | 'Pago Móvil' | 'Zelle' | 'Saldo Vixy';
+  status: 'completado';
+}
+
 export interface BackendUserPermissions {
   dashboard: boolean;
   drivers: boolean;
@@ -142,6 +164,7 @@ export interface BackendUserPermissions {
   map: boolean;
   emergencies: boolean;
   financesConfig: boolean;
+  earningsAudit: boolean;
   notifications: boolean;
   reviews: boolean;
   userManagement: boolean;

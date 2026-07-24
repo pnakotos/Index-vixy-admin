@@ -63,8 +63,8 @@ export const AuditLogsView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/80 transition">
+              {filteredLogs.map((log, index) => (
+                <tr key={`${log.id}-${index}`} className="hover:bg-slate-50/80 transition">
                   <td className="p-4 text-slate-500 whitespace-nowrap">{log.timestamp}</td>
                   <td className="p-4 font-sans font-extrabold text-slate-900">
                     <div>{log.adminUser}</div>

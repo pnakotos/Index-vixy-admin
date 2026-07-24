@@ -13,6 +13,7 @@ import {
   EmergencyType,
   BackendUserPermissions,
   AdminRole,
+  CompletedService,
 } from '../types';
 import {
   INITIAL_SYSTEM_CONFIG,
@@ -23,6 +24,7 @@ import {
   INITIAL_REVIEWS,
   INITIAL_AUDIT_LOGS,
   INITIAL_BACKEND_USERS,
+  INITIAL_COMPLETED_SERVICES,
 } from '../data/mockData';
 
 interface AdminContextType {
@@ -57,6 +59,8 @@ interface AdminContextType {
   
   auditLogs: AuditLogEntry[];
   addAuditLog: (action: string, module: string, details: string) => void;
+
+  completedServices: CompletedService[];
   
   backendUsers: BackendUser[];
   addBackendUser: (user: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => void;
@@ -136,6 +140,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
     const saved = localStorage.getItem('vixy_audit_logs');
     return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
+  });
+
+  const [completedServices, setCompletedServices] = useState<CompletedService[]>(() => {
+    const saved = localStorage.getItem('vixy_completed_services');
+    return saved ? JSON.parse(saved) : INITIAL_COMPLETED_SERVICES;
   });
 
   const [backendUsers, setBackendUsers] = useState<BackendUser[]>(() => {
@@ -226,7 +235,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addAuditLog = (action: string, moduleName: string, details: string) => {
     const newLog: AuditLogEntry = {
-      id: `log-${Date.now()}`,
+      id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       timestamp: new Date().toLocaleString('es-VE'),
       adminUser: currentBackendUser.name,
       adminRole: currentBackendUser.role,
@@ -529,7 +538,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const triggerSimulatedEmergency = (type: EmergencyType = 'sos') => {
     const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
     const newEmergency: EmergencyAlert = {
-      id: `emg-${Date.now()}`,
+      id: `emg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       type,
       reporterType: 'conductor',
       reporterId: randomDriver.id,
@@ -561,7 +570,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const sendPushNotification = (notif: Omit<PushNotification, 'id' | 'sentAt' | 'sentBy'>) => {
     const newNotif: PushNotification = {
       ...notif,
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       sentAt: new Date().toLocaleString('es-VE'),
       sentBy: currentBackendUser.name,
     };
@@ -592,7 +601,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addBackendUser = (userData: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => {
     const newUser: BackendUser = {
       ...userData,
-      id: `usr-${Date.now()}`,
+      id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString().split('T')[0],
       lastLogin: 'Nunca',
     };
@@ -732,6 +741,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteReview,
         auditLogs,
         addAuditLog,
+        completedServices,
         backendUsers,
         addBackendUser,
         updateBackendUserPermissions,

@@ -84,7 +84,7 @@ export const EmergencyAlertsView: React.FC = () => {
             </p>
           </div>
         ) : (
-          emergencies.map((emg) => {
+          emergencies.map((emg, idx) => {
             const statusBadges = {
               pendiente: 'bg-red-600 text-white animate-pulse border-red-500 font-bold',
               en_proceso: 'bg-amber-500 text-white border-amber-400 font-bold',
@@ -101,7 +101,7 @@ export const EmergencyAlertsView: React.FC = () => {
 
             return (
               <div
-                key={emg.id}
+                key={`${emg.id}-${idx}`}
                 className={`p-5 rounded-2xl border transition-all space-y-4 shadow-xs ${
                   emg.status === 'pendiente'
                     ? 'bg-red-50/40 border-red-300'

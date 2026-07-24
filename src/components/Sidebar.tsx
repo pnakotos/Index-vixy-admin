@@ -13,6 +13,7 @@ import {
   History,
   ShieldAlert,
   Globe,
+  TrendingUp,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 
@@ -86,6 +87,12 @@ export const Sidebar: React.FC = () => {
       label: 'Tasa BCV & Pagos',
       icon: <Settings className="w-4 h-4" />,
       allowed: p.financesConfig,
+    },
+    {
+      id: 'earningsAudit',
+      label: 'Auditoría Ganancias',
+      icon: <TrendingUp className="w-4 h-4" />,
+      allowed: p.earningsAudit,
     },
     {
       id: 'notifications',

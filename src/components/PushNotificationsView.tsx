@@ -152,9 +152,9 @@ export const PushNotificationsView: React.FC = () => {
           </p>
         ) : (
           <div className="space-y-3">
-            {pushNotifications.map((notif) => (
+            {pushNotifications.map((notif, idx) => (
               <div
-                key={notif.id}
+                key={`${notif.id}-${idx}`}
                 className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5"
               >
                 <div className="flex items-center justify-between">

@@ -9,6 +9,7 @@ import { PaymentVerification } from './components/PaymentVerification';
 import { MapView } from './components/MapView';
 import { EmergencyAlertsView } from './components/EmergencyAlertsView';
 import { FinancialSettings } from './components/FinancialSettings';
+import { EarningsAuditView } from './components/EarningsAuditView';
 import { PushNotificationsView } from './components/PushNotificationsView';
 import { ReviewsPanel } from './components/ReviewsPanel';
 import { UserPermissionsView } from './components/UserPermissionsView';
@@ -32,6 +33,7 @@ const MainContent: React.FC = () => {
       {activeTab === 'map' && <MapView />}
       {activeTab === 'emergencies' && <EmergencyAlertsView />}
       {activeTab === 'financesConfig' && <FinancialSettings />}
+      {activeTab === 'earningsAudit' && <EarningsAuditView />}
       {activeTab === 'notifications' && <PushNotificationsView />}
       {activeTab === 'reviews' && <ReviewsPanel />}
       {activeTab === 'userManagement' && <UserPermissionsView />}
