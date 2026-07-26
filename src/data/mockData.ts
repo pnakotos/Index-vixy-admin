@@ -9,13 +9,18 @@ import {
   BackendUser,
   SystemConfig,
   CompletedService,
+  BrandingMedia,
+  ApiInterconnectionConfig,
 } from '../types';
 
 export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
   bcvRate: 58.50, // Rate VES/USD
   commissionPercent: 12.5, // 12.5% company commission
   negativeBalanceThreshold: -0.50, // -$0.50
-  adminEmail: 'administracion@vixytaxi.com',
+  adminEmail: 'administracion@vhixy.site',
+  baseFareUSD: 2.00, // $2.00 USD tarifa mínima
+  baseDistanceKm: 3.0, // primeros 3 km de carrera incluidos
+  additionalKmRateUSD: 0.50, // $0.50 USD por cada km adicional
   pagoMovil: {
     bankName: '0102 - Banco de Venezuela',
     bankCode: '0102',
@@ -98,7 +103,7 @@ export const INITIAL_DRIVERS: Driver[] = [
   {
     id: 'drv-003',
     name: 'José Alejandro Silva',
-    email: 'jose.delivery@vixy.com',
+    email: 'jose.delivery@vhixy.site',
     phone: '+58 424-3332211',
     category: 'delivery',
     status: 'activo',
@@ -621,16 +626,38 @@ export const INITIAL_COMPLETED_SERVICES: CompletedService[] = [
   }
 ];
 
+export const INITIAL_BRANDING_MEDIA: BrandingMedia = {
+  imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=80',
+  backgroundImageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1920&q=80',
+  videoUrl: '',
+  videoTitle: 'Presentación Corporativa Vixy Venezuela',
+};
+
+export const INITIAL_API_CONFIG: ApiInterconnectionConfig = {
+  backendApiUrl: import.meta.env.VIXY_BACKEND_API_URL || 'https://vhixy.site',
+  prodApiKey: import.meta.env.VIXY_PROD_API_KEY || 'YOUR_VIXY_PROD_API_KEY',
+  googleMapsApiKey: import.meta.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY',
+  paymentWebhookSecret: import.meta.env.PAYMENT_WEBHOOK_SECRET || 'YOUR_WEBHOOK_SECRET',
+  driverAppSyncEndpoint: import.meta.env.DRIVER_APP_SYNC_ENDPOINT || 'https://vhixy.site/v1/drivers/sync',
+  passengerAppSyncEndpoint: import.meta.env.PASSENGER_APP_SYNC_ENDPOINT || 'https://vhixy.site/v1/passengers/sync',
+  fcmServerKey: import.meta.env.FIREBASE_FCM_KEY || 'YOUR_FCM_SERVER_KEY',
+  productionMode: true,
+};
+
 export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-root',
     name: 'Súperusuario Root',
-    email: 'root@vixytaxi.com',
+    email: 'root@vhixy.site',
     role: 'Super Admin',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     isActive: true,
     createdAt: '2024-01-01',
     lastLogin: 'Hace un momento',
+    password: '123456',
+    mustChangePassword: true,
+    passwordExpirationDays: 90,
+    passwordCreatedAt: '2026-07-01',
     permissions: {
       dashboard: true,
       drivers: true,
@@ -649,12 +676,16 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-001',
     name: 'Admin General Vixy',
-    email: 'admin@vixytaxi.com',
+    email: 'admin@vhixy.site',
     role: 'Super Admin',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     isActive: true,
     createdAt: '2024-01-01',
     lastLogin: 'Hace 2 min',
+    password: '123456',
+    mustChangePassword: true,
+    passwordExpirationDays: 90,
+    passwordCreatedAt: '2026-07-01',
     permissions: {
       dashboard: true,
       drivers: true,
@@ -673,12 +704,16 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-002',
     name: 'Valeria Rivas (Finanzas)',
-    email: 'finanzas@vixytaxi.com',
+    email: 'finanzas@vhixy.site',
     role: 'Finanzas',
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
     isActive: true,
     createdAt: '2024-05-10',
     lastLogin: 'Hace 1 hora',
+    password: '123456',
+    mustChangePassword: true,
+    passwordExpirationDays: 30,
+    passwordCreatedAt: '2026-07-01',
     permissions: {
       dashboard: true,
       drivers: true,
@@ -697,12 +732,16 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-003',
     name: 'Marcos Antonio Peña',
-    email: 'despacho@vixytaxi.com',
+    email: 'despacho@vhixy.site',
     role: 'Despacho y Soporte',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
     isActive: true,
     createdAt: '2024-08-15',
     lastLogin: 'Hace 15 min',
+    password: '123456',
+    mustChangePassword: true,
+    passwordExpirationDays: 30,
+    passwordCreatedAt: '2026-07-01',
     permissions: {
       dashboard: true,
       drivers: true,

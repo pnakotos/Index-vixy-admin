@@ -38,7 +38,7 @@ export const WebDeploymentGuideModal: React.FC = () => {
 
   const nginxContent = `server {
     listen 80;
-    server_name tudominio.com www.tudominio.com;
+    server_name vhixy.site www.vhixy.site;
     root /var/www/vixy-admin/dist;
     index index.html;
 

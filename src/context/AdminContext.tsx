@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import {
   Driver,
   Client,
@@ -14,6 +16,8 @@ import {
   BackendUserPermissions,
   AdminRole,
   CompletedService,
+  BrandingMedia,
+  ApiInterconnectionConfig,
 } from '../types';
 import {
   INITIAL_SYSTEM_CONFIG,
@@ -25,6 +29,8 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_BACKEND_USERS,
   INITIAL_COMPLETED_SERVICES,
+  INITIAL_BRANDING_MEDIA,
+  INITIAL_API_CONFIG,
 } from '../data/mockData';
 
 interface AdminContextType {
@@ -66,9 +72,16 @@ interface AdminContextType {
   addBackendUser: (user: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => void;
   updateBackendUserPermissions: (userId: string, permissions: BackendUserPermissions, role: AdminRole) => void;
   toggleBackendUserActive: (userId: string) => void;
+  updateBackendUserPassword: (userId: string, newPass: string, expirationDays?: 30 | 90) => void;
   
   currentBackendUser: BackendUser;
   setCurrentBackendUser: (user: BackendUser) => void;
+  
+  brandingMedia: BrandingMedia;
+  updateBrandingMedia: (media: Partial<BrandingMedia>) => void;
+  
+  apiConfig: ApiInterconnectionConfig;
+  updateApiConfig: (configPartial: Partial<ApiInterconnectionConfig>) => void;
   
   // Auth & Root Password Management
   isAuthenticated: boolean;
@@ -149,7 +162,41 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [backendUsers, setBackendUsers] = useState<BackendUser[]>(() => {
     const saved = localStorage.getItem('vixy_backend_users');
-    return saved ? JSON.parse(saved) : INITIAL_BACKEND_USERS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        /* fallback */
+      }
+    }
+    return INITIAL_BACKEND_USERS;
+  });
+
+  const [brandingMedia, setBrandingMedia] = useState<BrandingMedia>(() => {
+    const saved = localStorage.getItem('vixy_branding_media');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return { ...INITIAL_BRANDING_MEDIA, ...parsed };
+      } catch (e) {
+        /* fallback */
+      }
+    }
+    return INITIAL_BRANDING_MEDIA;
+  });
+
+  const [apiConfig, setApiConfig] = useState<ApiInterconnectionConfig>(() => {
+    const saved = localStorage.getItem('vixy_api_config');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return { ...INITIAL_API_CONFIG, ...parsed };
+      } catch (e) {
+        /* fallback */
+      }
+    }
+    return INITIAL_API_CONFIG;
   });
 
   // Auth & Root Password States
@@ -171,7 +218,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentBackendUser, setCurrentBackendUser] = useState<BackendUser>(() => {
     const saved = localStorage.getItem('vixy_current_user');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* fallback */ }
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id && parsed.name && parsed.permissions) return parsed;
+      } catch (e) {
+        /* fallback */
+      }
     }
     return INITIAL_BACKEND_USERS[0];
   });
@@ -194,6 +246,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     localStorage.setItem('vixy_config', JSON.stringify(config));
+    setDoc(doc(db, 'config', 'system'), config).catch((error) => {
+      console.warn('Could not sync config to Firestore:', error);
+    });
   }, [config]);
 
   useEffect(() => {
@@ -228,6 +283,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('vixy_backend_users', JSON.stringify(backendUsers));
   }, [backendUsers]);
 
+  useEffect(() => {
+    localStorage.setItem('vixy_branding_media', JSON.stringify(brandingMedia));
+  }, [brandingMedia]);
+
+  useEffect(() => {
+    localStorage.setItem('vixy_api_config', JSON.stringify(apiConfig));
+  }, [apiConfig]);
+
+  const updateBrandingMedia = (mediaPartial: Partial<BrandingMedia>) => {
+    setBrandingMedia((prev) => ({ ...prev, ...mediaPartial }));
+    showToast('Fondo e información de marca actualizados', 'success');
+  };
+
+  const updateApiConfig = (configPartial: Partial<ApiInterconnectionConfig>) => {
+    setApiConfig((prev) => ({ ...prev, ...configPartial }));
+    addAuditLog(
+      'Actualización Claves API',
+      'Configuración & Web',
+      'Se han actualizado las claves de interconexión y producción de la plataforma.'
+    );
+    showToast('🔑 Claves de API e interconexión guardadas correctamente', 'success');
+  };
+
   const showToast = (text: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 4000);
@@ -237,8 +315,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newLog: AuditLogEntry = {
       id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       timestamp: new Date().toLocaleString('es-VE'),
-      adminUser: currentBackendUser.name,
-      adminRole: currentBackendUser.role,
+      adminUser: currentBackendUser?.name || 'Administrador',
+      adminRole: currentBackendUser?.role || 'Super Admin',
       action,
       module: moduleName,
       details,
@@ -458,7 +536,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ? {
               ...p,
               status: 'verificado',
-              verifiedBy: currentBackendUser.name,
+              verifiedBy: currentBackendUser?.name || 'Administrador',
               verifiedAt: new Date().toLocaleString('es-VE'),
             }
           : p
@@ -492,7 +570,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               ...p,
               status: 'rechazado',
               notes: `Rechazado: ${reason}`,
-              verifiedBy: currentBackendUser.name,
+              verifiedBy: currentBackendUser?.name || 'Administrador',
               verifiedAt: new Date().toLocaleString('es-VE'),
             }
           : p
@@ -517,7 +595,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               ...e,
               status,
               notes: notes || e.notes,
-              resolvedBy: status === 'resuelto' ? currentBackendUser.name : e.resolvedBy,
+              resolvedBy: status === 'resuelto' ? (currentBackendUser?.name || 'Administrador') : e.resolvedBy,
             }
           : e
       )
@@ -572,7 +650,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...notif,
       id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       sentAt: new Date().toLocaleString('es-VE'),
-      sentBy: currentBackendUser.name,
+      sentBy: currentBackendUser?.name || 'Administrador',
     };
     setPushNotifications((prev) => [newNotif, ...prev]);
     addAuditLog(
@@ -599,19 +677,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Backend user management
   const addBackendUser = (userData: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => {
+    const todayStr = new Date().toISOString().split('T')[0];
     const newUser: BackendUser = {
       ...userData,
       id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: todayStr,
       lastLogin: 'Nunca',
+      password: userData.password || '123456',
+      mustChangePassword: userData.mustChangePassword !== undefined ? userData.mustChangePassword : true,
+      passwordExpirationDays: userData.passwordExpirationDays || 90,
+      passwordCreatedAt: todayStr,
     };
     setBackendUsers((prev) => [...prev, newUser]);
     addAuditLog(
       'Creación de Usuario Administrativo',
       'Niveles de Acceso',
-      `Creado nuevo usuario ${newUser.name} (${newUser.email}) con rol [${newUser.role}]`
+      `Creado usuario ${newUser.name} (${newUser.email}) con rol [${newUser.role}] y expiración de clave a ${newUser.passwordExpirationDays} días`
     );
-    showToast(`Usuario ${newUser.name} creado exitosamente`, 'success');
+    showToast(`Usuario ${newUser.name} creado exitosamente con clave inicial`, 'success');
   };
 
   const updateBackendUserPermissions = (userId: string, permissions: BackendUserPermissions, role: AdminRole) => {
@@ -626,6 +709,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Permisos de usuario actualizados', 'success');
   };
 
+  const updateBackendUserPassword = (userId: string, newPass: string, expirationDays?: 30 | 90) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    setBackendUsers((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              password: newPass,
+              passwordExpirationDays: expirationDays || u.passwordExpirationDays || 90,
+              passwordCreatedAt: todayStr,
+              mustChangePassword: true,
+            }
+          : u
+      )
+    );
+    addAuditLog(
+      'Actualización de Clave de Usuario',
+      'Niveles de Acceso',
+      `Nueva clave asignada a usuario ID #${userId}`
+    );
+    showToast('Clave de usuario actualizada correctamente', 'success');
+  };
+
   const toggleBackendUserActive = (userId: string) => {
     setBackendUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, isActive: !u.isActive } : u))
@@ -638,7 +744,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const cleanUser = usernameOrEmail.trim().toLowerCase();
 
     // Check if root user
-    if (cleanUser === 'root' || cleanUser === 'root@vixytaxi.com') {
+    if (cleanUser === 'root' || cleanUser === 'root@vhixy.site' || cleanUser === 'root@vixytaxi.com') {
       if (passInput === rootPassword) {
         const rootUser = backendUsers.find((u) => u.id === 'usr-root') || INITIAL_BACKEND_USERS[0];
         setCurrentBackendUser(rootUser);
@@ -646,15 +752,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         if (rootPassword === '123456') {
           setIsChangePasswordModalOpen(true);
-          showToast('⚠️ ATENCIÓN: Debes cambiar la clave por primera vez (123456)', 'warning');
+          showToast('⚠️ ATENCIÓN: Debes cambiar la clave por primera vez', 'warning');
           return { success: true, mustChangePass: true, message: 'Ingreso como Root correcto. Debes cambiar la contraseña por primera vez.' };
         }
 
         showToast('¡Bienvenido Súperusuario Root!', 'success');
         return { success: true, mustChangePass: false };
       } else {
-        showToast('Contraseña incorrecta para súperusuario root.', 'error');
-        return { success: false, message: 'Contraseña incorrecta para súperusuario root.' };
+        showToast('Contraseña incorrecta.', 'error');
+        return { success: false, message: 'Contraseña incorrecta.' };
       }
     }
 
@@ -668,8 +774,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast('Este usuario se encuentra inactivo.', 'error');
         return { success: false, message: 'Usuario desactivado por la administración.' };
       }
+
+      const expectedPass = foundUser.password || '123456';
+      if (passInput !== expectedPass) {
+        showToast('Contraseña incorrecta.', 'error');
+        return { success: false, message: 'Contraseña de acceso incorrecta.' };
+      }
+
+      // Check password expiration (30 or 90 days)
+      let isExpired = false;
+      if (foundUser.passwordCreatedAt && foundUser.passwordExpirationDays) {
+        const createdMs = new Date(foundUser.passwordCreatedAt).getTime();
+        const nowMs = new Date().getTime();
+        const diffDays = Math.floor((nowMs - createdMs) / (1000 * 60 * 60 * 24));
+        if (diffDays >= foundUser.passwordExpirationDays) {
+          isExpired = true;
+        }
+      }
+
       setCurrentBackendUser(foundUser);
       setIsAuthenticated(true);
+
+      if (foundUser.mustChangePassword || isExpired) {
+        setIsChangePasswordModalOpen(true);
+        const alertMsg = isExpired ? 'Tu contraseña ha expirado (límite alcanzado)' : 'Debes cambiar tu contraseña en tu primer inicio de sesión';
+        showToast(`⚠️ ${alertMsg}`, 'warning');
+        return { success: true, mustChangePass: true, message: alertMsg };
+      }
+
       showToast(`Bienvenido, ${foundUser.name}`, 'success');
       return { success: true };
     }
@@ -684,7 +816,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const changeRootPassword = (oldPass: string, newPass: string) => {
-    if (oldPass !== rootPassword) {
+    const currentPass = currentBackendUser?.id === 'usr-root' ? rootPassword : (currentBackendUser?.password || '123456');
+
+    if (oldPass !== currentPass) {
       showToast('La contraseña actual ingresada es incorrecta', 'error');
       return { success: false, message: 'La contraseña actual no coincide.' };
     }
@@ -697,14 +831,35 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return { success: false, message: 'No puedes reutilizar la contraseña por defecto (123456).' };
     }
 
-    setRootPassword(newPass);
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    if (currentBackendUser?.id === 'usr-root') {
+      setRootPassword(newPass);
+    }
+
+    // Also update in backendUsers state
+    setBackendUsers((prev) =>
+      prev.map((u) =>
+        u.id === currentBackendUser?.id
+          ? { ...u, password: newPass, mustChangePassword: false, passwordCreatedAt: todayStr }
+          : u
+      )
+    );
+
+    setCurrentBackendUser((prev) => ({
+      ...prev,
+      password: newPass,
+      mustChangePassword: false,
+      passwordCreatedAt: todayStr,
+    }));
+
     setIsChangePasswordModalOpen(false);
     addAuditLog(
-      'Cambio de Contraseña Root',
+      'Cambio de Contraseña',
       'Seguridad y Accesos',
-      'El súperusuario root ha cambiado su contraseña de inicio de sesión exitosamente.'
+      `El usuario ${currentBackendUser?.name || 'Usuario'} ha cambiado su contraseña de inicio de sesión exitosamente.`
     );
-    showToast('🔑 ¡Contraseña del Súperusuario Root actualizada exitosamente!', 'success');
+    showToast('🔑 ¡Contraseña actualizada exitosamente!', 'success');
     return { success: true, message: 'Contraseña actualizada.' };
   };
 
@@ -746,8 +901,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addBackendUser,
         updateBackendUserPermissions,
         toggleBackendUserActive,
+        updateBackendUserPassword,
         currentBackendUser,
         setCurrentBackendUser,
+        brandingMedia,
+        updateBrandingMedia,
+        apiConfig,
+        updateApiConfig,
         isAuthenticated,
         rootPassword,
         mustChangePassword,

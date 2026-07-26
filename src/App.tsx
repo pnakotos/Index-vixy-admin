@@ -46,12 +46,7 @@ const AppContainer: React.FC = () => {
   const { isAuthenticated } = useAdmin();
 
   if (!isAuthenticated) {
-    return (
-      <>
-        <LoginScreen />
-        <WebDeploymentGuideModal />
-      </>
-    );
+    return <LoginScreen />;
   }
 
   return (

@@ -6,17 +6,20 @@ export const ChangePasswordModal: React.FC = () => {
   const {
     changeRootPassword,
     rootPassword,
+    currentBackendUser,
     mustChangePassword,
     isChangePasswordModalOpen,
     setIsChangePasswordModalOpen,
   } = useAdmin();
 
-  const [oldPasswordInput, setOldPasswordInput] = useState('123456');
+  const isMandatory = mustChangePassword || currentBackendUser?.mustChangePassword;
+
+  const [oldPasswordInput, setOldPasswordInput] = useState('');
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  if (!isChangePasswordModalOpen && !mustChangePassword) return null;
+  if (!isChangePasswordModalOpen && !isMandatory) return null;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +59,7 @@ export const ChangePasswordModal: React.FC = () => {
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-zinc-950 border-2 border-purple-600 rounded-3xl max-w-md w-full p-6 md:p-8 space-y-6 shadow-2xl shadow-purple-950/80 text-white relative">
         {/* Close button only if not mandatory change */}
-        {!mustChangePassword && (
+        {!isMandatory && (
           <button
             onClick={() => setIsChangePasswordModalOpen(false)}
             className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 rounded-xl bg-zinc-900 border border-purple-900/40"
@@ -72,25 +75,25 @@ export const ChangePasswordModal: React.FC = () => {
           </div>
 
           <h3 className="text-lg font-black text-white">
-            {mustChangePassword
-              ? '🔒 Cambio Obligatorio de Contraseña (Primer Ingreso)'
-              : '🔑 Cambiar Contraseña de Súperusuario Root'}
+            {isMandatory
+              ? '🔒 Cambio Obligatorio de Contraseña'
+              : '🔑 Cambiar Contraseña de Cuenta'}
           </h3>
 
           <p className="text-xs text-purple-300">
-            {mustChangePassword
-              ? 'Has ingresado con la contraseña genérica de fábrica (123456). Por seguridad, debes establecer tu propia contraseña antes de continuar.'
-              : 'Actualiza la contraseña maestra del súperusuario root.'}
+            {isMandatory
+              ? 'Por políticas de seguridad, debes actualizar tu contraseña antes de acceder al sistema.'
+              : `Actualiza la contraseña para la cuenta ${currentBackendUser?.name || 'Root'}.`}
           </p>
         </div>
 
         {/* Warning Badge */}
-        {mustChangePassword && (
+        {isMandatory && (
           <div className="p-3 bg-purple-950/90 border border-purple-500 rounded-2xl flex items-start gap-2.5 text-xs text-purple-200">
             <AlertTriangle className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
             <div>
-              <strong className="block text-white font-bold mb-0.5">Acceso Bloqueado Hasta Actualizar</strong>
-              Para proteger tu instalación web, debes cambiar la clave inicial <code className="bg-black px-1.5 py-0.5 rounded text-purple-300 font-mono">123456</code> por una personalizada.
+              <strong className="block text-white font-bold mb-0.5">Acceso Restringido Hasta Actualizar</strong>
+              Debes reemplazar tu clave por una clave personalizada de al menos 6 caracteres.
             </div>
           </div>
         )}

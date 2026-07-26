@@ -29,7 +29,20 @@ export const Sidebar: React.FC = () => {
     setIsWebGuideModalOpen,
   } = useAdmin();
 
-  const p = currentBackendUser.permissions;
+  const p = currentBackendUser?.permissions || {
+    dashboard: true,
+    drivers: true,
+    clients: true,
+    payments: true,
+    map: true,
+    emergencies: true,
+    financesConfig: true,
+    earningsAudit: true,
+    notifications: true,
+    reviews: true,
+    userManagement: true,
+    auditLogs: true,
+  };
 
   const menuItems = [
     {
@@ -84,7 +97,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       id: 'financesConfig',
-      label: 'Tasa BCV & Pagos',
+      label: 'Configuración, Fondo & API',
       icon: <Settings className="w-4 h-4" />,
       allowed: p.financesConfig,
     },
@@ -168,20 +181,14 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Info Box */}
-      <div className="mt-6 p-3 rounded-xl bg-zinc-900 border border-purple-900/40 text-zinc-400 text-xs space-y-2">
+      <div className="mt-6 p-3 rounded-xl bg-zinc-900 border border-purple-900/40 text-zinc-400 text-xs space-y-1">
         <div className="flex items-center justify-between font-bold text-white">
           <span>Vixy Backend</span>
           <span className="text-[10px] text-purple-300 bg-purple-950 border border-purple-800 px-1.5 py-0.2 rounded font-mono">
             En Línea
           </span>
         </div>
-        <button
-          onClick={() => setIsWebGuideModalOpen(true)}
-          className="w-full py-1.5 px-2 bg-purple-950/80 hover:bg-purple-900 border border-purple-800 rounded-lg text-[11px] font-bold text-purple-200 flex items-center justify-center gap-1.5 transition"
-        >
-          <Globe className="w-3.5 h-3.5 text-purple-400" />
-          <span>Montar en Sitio Web</span>
-        </button>
+        <p className="text-[10px] text-zinc-500">Panel de Control Administrativo Vixy</p>
       </div>
     </aside>
   );

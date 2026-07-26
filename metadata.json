@@ -1,6 +1,6 @@
 {
   "name": "Vixy Administrativo",
-  "description": "Panel administrativo para el servicio de transporte Vixy: gestión de taxi, mototaxi, delivery, clientes, mapa en vivo, tasa BCV, verificación de pagos y alertas de emergencia.",
+  "description": "Panel administrativo para el servicio de transporte Vixy (vhixy.site): gestión de taxi, mototaxi, delivery, clientes, mapa en vivo, tasa BCV, verificación de pagos y alertas de emergencia.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

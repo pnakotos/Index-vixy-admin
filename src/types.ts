@@ -180,7 +180,18 @@ export interface BackendUser {
   isActive: boolean;
   createdAt: string;
   lastLogin: string;
+  password?: string;
+  mustChangePassword?: boolean;
+  passwordExpirationDays?: 30 | 90;
+  passwordCreatedAt?: string;
   permissions: BackendUserPermissions;
+}
+
+export interface BrandingMedia {
+  imageUrl: string;
+  backgroundImageUrl?: string;
+  videoUrl: string;
+  videoTitle: string;
 }
 
 export interface PagoMovilConfig {
@@ -191,11 +202,25 @@ export interface PagoMovilConfig {
   holderName: string;
 }
 
+export interface ApiInterconnectionConfig {
+  backendApiUrl: string;
+  prodApiKey: string;
+  googleMapsApiKey: string;
+  paymentWebhookSecret: string;
+  driverAppSyncEndpoint: string;
+  passengerAppSyncEndpoint: string;
+  fcmServerKey: string;
+  productionMode: boolean;
+}
+
 export interface SystemConfig {
   bcvRate: number; // Rate in VES per USD
   commissionPercent: number; // e.g., 15 for 15%
   negativeBalanceThreshold: number; // default -0.50 ($)
   adminEmail: string;
+  baseFareUSD: number; // Tarifa mínima base (USD) - ej. 2.00$
+  baseDistanceKm: number; // Distancia inicial incluida en tarifa mínima (Km) - ej. 3.0 km
+  additionalKmRateUSD: number; // Costo por Km adicional (USD) - ej. 0.50$
   pagoMovil: PagoMovilConfig;
   gateways: {
     pagoMovil: boolean;

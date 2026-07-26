@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Drivers collection
+    match /drivers/{driverId} {
+      allow read, write: if isSignedIn() && isValidId(driverId);
+    }
+
+    // Clients collection
+    match /clients/{clientId} {
+      allow read, write: if isSignedIn() && isValidId(clientId);
+    }
+
+    // Payments collection
+    match /payments/{paymentId} {
+      allow read, write: if isSignedIn() && isValidId(paymentId);
+    }
+
+    // Emergencies collection
+    match /emergencies/{emergencyId} {
+      allow read, write: if isSignedIn() && isValidId(emergencyId);
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read, write: if isSignedIn() && isValidId(notificationId);
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      allow read, write: if isSignedIn() && isValidId(reviewId);
+    }
+
+    // System Config collection
+    match /config/{configDoc} {
+      allow read, write: if isSignedIn() && isValidId(configDoc);
+    }
+
+    // Completed Services collection
+    match /completedServices/{serviceId} {
+      allow read, write: if isSignedIn() && isValidId(serviceId);
+    }
+
+    // Audit Logs collection
+    match /auditLogs/{logId} {
+      allow read, write: if isSignedIn() && isValidId(logId);
+    }
+
+    // Backend Users collection
+    match /backendUsers/{userId} {
+      allow read, write: if isSignedIn() && isValidId(userId);
+    }
+  }
+}

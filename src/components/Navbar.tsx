@@ -119,16 +119,6 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Web Deployment Guide Trigger */}
-          <button
-            onClick={() => setIsWebGuideModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-700 text-purple-200 rounded-xl text-xs font-semibold transition"
-            title="Guía y archivos para montar en un sitio web hosting"
-          >
-            <Globe className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden sm:inline">Guía Web</span>
-          </button>
-
           {/* Negative Balance Driver Alert Badge */}
           <button
             onClick={() => setActiveTab('drivers_negative')}
@@ -187,15 +177,15 @@ export const Navbar: React.FC = () => {
             title="Cambiar contraseña de Súperusuario Root"
           >
             <div className="w-7 h-7 rounded-lg bg-purple-950 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-800 shrink-0">
-              {currentBackendUser.name.charAt(0)}
+              {(currentBackendUser?.name || 'A').charAt(0)}
             </div>
             <div>
               <p className="text-xs font-bold text-white leading-tight flex items-center gap-1">
-                {currentBackendUser.name}
+                {currentBackendUser?.name || 'Administrador'}
                 <KeyRound className="w-3 h-3 text-purple-400 ml-1" />
               </p>
               <p className="text-[10px] text-purple-400 font-medium">
-                {currentBackendUser.role}
+                {currentBackendUser?.role || 'Super Admin'}
               </p>
             </div>
           </button>

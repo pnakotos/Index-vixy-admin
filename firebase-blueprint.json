@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "Driver": {
+      "title": "Driver",
+      "description": "A registered driver or delivery person in Vixy",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "category": { "type": "string", "enum": ["taxi", "mototaxi", "delivery"] },
+        "status": { "type": "string", "enum": ["activo", "bloqueado", "pendiente", "rechazado"] },
+        "balanceUSD": { "type": "number" },
+        "rating": { "type": "number" },
+        "completedTrips": { "type": "number" },
+        "isOnline": { "type": "boolean" },
+        "locationName": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "lastActive": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "phone", "category", "status"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A passenger or customer in Vixy",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "balanceUSD": { "type": "number" },
+        "totalTrips": { "type": "number" },
+        "rating": { "type": "number" },
+        "isBlocked": { "type": "boolean" },
+        "registeredAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "phone"]
+    },
+    "PaymentRecord": {
+      "title": "PaymentRecord",
+      "description": "A payment or recharge record for drivers or clients",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["driver_commission", "client_payment"] },
+        "entityId": { "type": "string" },
+        "entityName": { "type": "string" },
+        "referenceNumber": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "amountVES": { "type": "number" },
+        "amountUSD": { "type": "number" },
+        "status": { "type": "string", "enum": ["pendiente", "verificado", "rechazado"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "type", "entityId", "referenceNumber", "amountUSD", "status"]
+    },
+    "EmergencyAlert": {
+      "title": "EmergencyAlert",
+      "description": "An emergency SOS report from a driver or client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["robo", "accidente", "sos", "mecanico"] },
+        "reporterType": { "type": "string", "enum": ["conductor", "cliente"] },
+        "reporterId": { "type": "string" },
+        "reporterName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pendiente", "en_proceso", "resuelto", "falsa_alarma"] },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "type", "reporterType", "reporterId", "status"]
+    },
+    "PushNotification": {
+      "title": "PushNotification",
+      "description": "A push notification sent to users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 120 },
+        "body": { "type": "string", "maxLength": 500 },
+        "targetGroup": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "sentBy": { "type": "string" }
+      },
+      "required": ["id", "title", "body", "targetGroup"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A rating and review for a driver",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "driverId": { "type": "string" },
+        "driverName": { "type": "string" },
+        "clientId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "isFlagged": { "type": "boolean" }
+      },
+      "required": ["id", "driverId", "rating"]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "System parameters like BCV exchange rate, commission and service fares",
+      "type": "object",
+      "properties": {
+        "bcvRate": { "type": "number" },
+        "commissionPercent": { "type": "number" },
+        "negativeBalanceThreshold": { "type": "number" },
+        "adminEmail": { "type": "string" },
+        "baseFareUSD": { "type": "number" },
+        "baseDistanceKm": { "type": "number" },
+        "additionalKmRateUSD": { "type": "number" }
+      },
+      "required": ["bcvRate", "commissionPercent"]
+    }
+  },
+  "firestore": {
+    "/drivers/{driverId}": {
+      "schema": { "$ref": "#/entities/Driver" },
+      "description": "Stores registered drivers"
+    },
+    "/clients/{clientId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Stores registered clients"
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/PaymentRecord" },
+      "description": "Stores financial payment records"
+    },
+    "/emergencies/{emergencyId}": {
+      "schema": { "$ref": "#/entities/EmergencyAlert" },
+      "description": "Stores emergency alerts"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/PushNotification" },
+      "description": "Stores sent notifications"
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Stores driver reviews"
+    },
+    "/config/system": {
+      "schema": { "$ref": "#/entities/SystemConfig" },
+      "description": "Global application configuration"
+    }
+  }
+}
