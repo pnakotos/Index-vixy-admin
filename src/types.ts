@@ -187,6 +187,30 @@ export interface BackendUser {
   permissions: BackendUserPermissions;
 }
 
+export type ServiceType = 'taxi' | 'mototaxi' | 'delivery';
+
+export interface ServiceFareConfig {
+  baseFareUSD: number;       // Tarifa mínima base (USD)
+  baseDistanceKm: number;    // Distancia inicial incluida en tarifa mínima (Km)
+  additionalKmRateUSD: number; // Costo por Km adicional (USD)
+}
+
+export type StateServiceFares = Record<ServiceType, ServiceFareConfig>;
+
+export type StateRatesMap = Record<string, StateServiceFares>;
+
+export interface UniversityFareConfig {
+  enabled: boolean;
+  notes?: string;
+  allowedUniversities: string[];
+  requireStudentVerification?: boolean;
+  taxi: ServiceFareConfig;
+  mototaxi: ServiceFareConfig;
+  delivery: ServiceFareConfig;
+}
+
+export type StateUniversityRatesMap = Record<string, UniversityFareConfig>;
+
 export interface BrandingMedia {
   imageUrl: string;
   backgroundImageUrl?: string;
@@ -221,6 +245,9 @@ export interface SystemConfig {
   baseFareUSD: number; // Tarifa mínima base (USD) - ej. 2.00$
   baseDistanceKm: number; // Distancia inicial incluida en tarifa mínima (Km) - ej. 3.0 km
   additionalKmRateUSD: number; // Costo por Km adicional (USD) - ej. 0.50$
+  stateRates?: StateRatesMap; // Tarifas diferenciadas por Estado de Venezuela y Tipo de Servicio (Taxi, Moto Taxi, Delivery)
+  universityStateRates?: StateUniversityRatesMap; // Tarifas Universitarias especiales diferenciadas por Estado de Venezuela
+  universityNationalEnabled?: boolean; // Interruptor Master Nacional para la Modalidad Tarifa Universitaria
   pagoMovil: PagoMovilConfig;
   gateways: {
     pagoMovil: boolean;

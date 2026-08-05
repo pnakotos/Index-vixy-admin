@@ -11,16 +11,117 @@ import {
   CompletedService,
   BrandingMedia,
   ApiInterconnectionConfig,
+  StateRatesMap,
+  StateServiceFares,
+  UniversityFareConfig,
+  StateUniversityRatesMap,
 } from '../types';
+
+export const VENEZUELA_STATES: string[] = [
+  'Distrito Capital',
+  'Anzoátegui',
+  'Apure',
+  'Aragua',
+  'Barinas',
+  'Bolívar',
+  'Carabobo',
+  'Cojedes',
+  'Delta Amacuro',
+  'Falcón',
+  'Guárico',
+  'Lara',
+  'Mérida',
+  'Miranda',
+  'Monagas',
+  'Nueva Esparta',
+  'Portuguesa',
+  'Sucre',
+  'Táchira',
+  'Trujillo',
+  'La Guaira',
+  'Yaracuy',
+  'Zulia',
+  'Amazonas',
+];
+
+export const createDefaultStateServiceFares = (stateName: string): StateServiceFares => {
+  // Ajustes regionales predeterminados adaptados al mercado venezolano
+  if (stateName === 'Distrito Capital' || stateName === 'Miranda' || stateName === 'La Guaira') {
+    return {
+      taxi: { baseFareUSD: 3.00, baseDistanceKm: 3.0, additionalKmRateUSD: 0.70 },
+      mototaxi: { baseFareUSD: 1.80, baseDistanceKm: 2.5, additionalKmRateUSD: 0.45 },
+      delivery: { baseFareUSD: 2.00, baseDistanceKm: 2.0, additionalKmRateUSD: 0.50 },
+    };
+  }
+  if (stateName === 'Zulia' || stateName === 'Carabobo' || stateName === 'Lara' || stateName === 'Aragua') {
+    return {
+      taxi: { baseFareUSD: 2.80, baseDistanceKm: 3.0, additionalKmRateUSD: 0.65 },
+      mototaxi: { baseFareUSD: 1.60, baseDistanceKm: 2.5, additionalKmRateUSD: 0.42 },
+      delivery: { baseFareUSD: 1.80, baseDistanceKm: 2.0, additionalKmRateUSD: 0.48 },
+    };
+  }
+  if (stateName === 'Nueva Esparta' || stateName === 'Bolívar' || stateName === 'Táchira') {
+    return {
+      taxi: { baseFareUSD: 3.20, baseDistanceKm: 3.0, additionalKmRateUSD: 0.75 },
+      mototaxi: { baseFareUSD: 2.00, baseDistanceKm: 2.5, additionalKmRateUSD: 0.50 },
+      delivery: { baseFareUSD: 2.20, baseDistanceKm: 2.0, additionalKmRateUSD: 0.55 },
+    };
+  }
+
+  // Estándar para el resto de los estados de Venezuela
+  return {
+    taxi: { baseFareUSD: 2.50, baseDistanceKm: 3.0, additionalKmRateUSD: 0.60 },
+    mototaxi: { baseFareUSD: 1.50, baseDistanceKm: 2.5, additionalKmRateUSD: 0.40 },
+    delivery: { baseFareUSD: 1.80, baseDistanceKm: 2.0, additionalKmRateUSD: 0.45 },
+  };
+};
+
+export const INITIAL_STATE_RATES: StateRatesMap = VENEZUELA_STATES.reduce((acc, state) => {
+  acc[state] = createDefaultStateServiceFares(state);
+  return acc;
+}, {} as StateRatesMap);
+
+export const createDefaultUniversityFare = (stateName: string): UniversityFareConfig => {
+  const std = createDefaultStateServiceFares(stateName);
+  return {
+    enabled: true,
+    notes: `Modalidad Tarifa Universitaria activa para ${stateName}. Aplica exclusivamente a viajes cuyo origen o destino sea un campus universitario o centro académico registrado.`,
+    allowedUniversities: ['UCV', 'USB', 'UCAB', 'UNIMET', 'UC', 'LUZ', 'ULA', 'UDO', 'UNEFA', 'UBV'],
+    requireStudentVerification: true,
+    taxi: {
+      baseFareUSD: +(std.taxi.baseFareUSD * 0.75).toFixed(2), // 25% desc
+      baseDistanceKm: std.taxi.baseDistanceKm,
+      additionalKmRateUSD: +(std.taxi.additionalKmRateUSD * 0.75).toFixed(2),
+    },
+    mototaxi: {
+      baseFareUSD: +(std.mototaxi.baseFareUSD * 0.75).toFixed(2),
+      baseDistanceKm: std.mototaxi.baseDistanceKm,
+      additionalKmRateUSD: +(std.mototaxi.additionalKmRateUSD * 0.75).toFixed(2),
+    },
+    delivery: {
+      baseFareUSD: +(std.delivery.baseFareUSD * 0.75).toFixed(2),
+      baseDistanceKm: std.delivery.baseDistanceKm,
+      additionalKmRateUSD: +(std.delivery.additionalKmRateUSD * 0.75).toFixed(2),
+    },
+  };
+};
+
+export const INITIAL_UNIVERSITY_STATE_RATES: StateUniversityRatesMap = VENEZUELA_STATES.reduce((acc, state) => {
+  acc[state] = createDefaultUniversityFare(state);
+  return acc;
+}, {} as StateUniversityRatesMap);
 
 export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
   bcvRate: 58.50, // Rate VES/USD
   commissionPercent: 12.5, // 12.5% company commission
   negativeBalanceThreshold: -0.50, // -$0.50
   adminEmail: 'administracion@vhixy.site',
-  baseFareUSD: 2.00, // $2.00 USD tarifa mínima
+  baseFareUSD: 2.50, // $2.50 USD tarifa mínima estándar
   baseDistanceKm: 3.0, // primeros 3 km de carrera incluidos
-  additionalKmRateUSD: 0.50, // $0.50 USD por cada km adicional
+  additionalKmRateUSD: 0.60, // $0.60 USD por cada km adicional
+  stateRates: INITIAL_STATE_RATES,
+  universityStateRates: INITIAL_UNIVERSITY_STATE_RATES,
+  universityNationalEnabled: true,
   pagoMovil: {
     bankName: '0102 - Banco de Venezuela',
     bankCode: '0102',

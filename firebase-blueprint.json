@@ -113,7 +113,8 @@
         "adminEmail": { "type": "string" },
         "baseFareUSD": { "type": "number" },
         "baseDistanceKm": { "type": "number" },
-        "additionalKmRateUSD": { "type": "number" }
+        "additionalKmRateUSD": { "type": "number" },
+        "stateRates": { "type": "object" }
       },
       "required": ["bcvRate", "commissionPercent"]
     }
