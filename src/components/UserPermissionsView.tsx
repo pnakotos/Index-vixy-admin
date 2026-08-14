@@ -16,6 +16,7 @@ import {
   Calendar,
   Trash2,
   AlertTriangle,
+  AtSign,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { AdminRole, BackendUserPermissions, BackendUser } from '../types';
@@ -34,6 +35,7 @@ export const UserPermissionsView: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [roleInput, setRoleInput] = useState<AdminRole>('Despacho y Soporte');
 
@@ -73,8 +75,13 @@ export const UserPermissionsView: React.FC = () => {
     e.preventDefault();
     if (!nameInput.trim() || !emailInput.trim() || !passwordInput.trim()) return;
 
+    const finalUsername = usernameInput.trim()
+      ? usernameInput.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '')
+      : emailInput.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+
     addBackendUser({
       name: nameInput.trim(),
+      username: finalUsername,
       email: emailInput.trim(),
       role: roleInput,
       isActive: true,
@@ -85,6 +92,7 @@ export const UserPermissionsView: React.FC = () => {
     });
 
     setNameInput('');
+    setUsernameInput('');
     setEmailInput('');
     setPasswordInput('123456');
     setMustChangePasswordInput(true);
@@ -189,14 +197,28 @@ export const UserPermissionsView: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 font-black text-blue-600 flex items-center justify-center text-sm">
                   {user.name.charAt(0)}
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-extrabold text-slate-900 truncate">{user.name}</h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="text-sm font-extrabold text-slate-900 truncate">{user.name}</h3>
+                    <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                      @{user.username || user.email.split('@')[0]}
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500 truncate">{user.email}</p>
                 </div>
               </div>
 
               {/* Security & Password Info Card */}
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-600 font-semibold flex items-center gap-1">
+                    <AtSign className="w-3.5 h-3.5 text-blue-600" /> Usuario de Acceso:
+                  </span>
+                  <span className="font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    @{user.username || user.email.split('@')[0]}
+                  </span>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600 font-semibold flex items-center gap-1">
                     <Key className="w-3.5 h-3.5 text-blue-600" /> Clave Asignada:
@@ -350,11 +372,54 @@ export const UserPermissionsView: React.FC = () => {
                 <input
                   type="text"
                   value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
+                  onChange={(e) => {
+                    setNameInput(e.target.value);
+                    if (!usernameInput) {
+                      // Auto suggest clean username
+                      const suggested = e.target.value
+                        .toLowerCase()
+                        .trim()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/\s+/g, '.')
+                        .replace(/[^a-z0-9_.-]/g, '');
+                      setUsernameInput(suggested);
+                    }
+                  }}
                   placeholder="Ej. Sofia Rodriguez"
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <AtSign className="w-3.5 h-3.5 text-blue-600" />
+                    Nombre de Usuario (Username / Alias de Acceso):
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal">Identificador único</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3 text-slate-400 font-mono font-bold select-none text-xs">@</span>
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) =>
+                      setUsernameInput(
+                        e.target.value
+                          .toLowerCase()
+                          .replace(/\s+/g, '.')
+                          .replace(/[^a-z0-9_.-]/g, '')
+                      )
+                    }
+                    placeholder="sofia.rodriguez"
+                    className="w-full pl-8 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Se utilizará para iniciar sesión en la plataforma y en los registros de auditoría del sistema.
+                </p>
               </div>
 
               <div>

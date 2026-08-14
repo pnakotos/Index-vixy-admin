@@ -831,6 +831,7 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-root',
     name: 'Súperusuario Root',
+    username: 'root',
     email: 'root@vhixy.site',
     role: 'Super Admin',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
@@ -859,6 +860,7 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-001',
     name: 'Admin General Vixy',
+    username: 'admin.general',
     email: 'admin@vhixy.site',
     role: 'Super Admin',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
@@ -887,6 +889,7 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-002',
     name: 'Valeria Rivas (Finanzas)',
+    username: 'valeria.finanzas',
     email: 'finanzas@vhixy.site',
     role: 'Finanzas',
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
@@ -915,6 +918,7 @@ export const INITIAL_BACKEND_USERS: BackendUser[] = [
   {
     id: 'usr-003',
     name: 'Marcos Antonio Peña',
+    username: 'marcos.despacho',
     email: 'despacho@vhixy.site',
     role: 'Despacho y Soporte',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',

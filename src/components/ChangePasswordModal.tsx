@@ -14,12 +14,20 @@ export const ChangePasswordModal: React.FC = () => {
 
   const isMandatory = mustChangePassword || currentBackendUser?.mustChangePassword;
 
+  const [isDismissed, setIsDismissed] = useState(false);
   const [oldPasswordInput, setOldPasswordInput] = useState('');
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  if (!isChangePasswordModalOpen && !isMandatory) return null;
+  const handleCloseModal = () => {
+    setIsDismissed(true);
+    setIsChangePasswordModalOpen(false);
+    setErrorMsg('');
+  };
+
+  const shouldShow = (isChangePasswordModalOpen || isMandatory) && (!isDismissed || isChangePasswordModalOpen);
+  if (!shouldShow) return null;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,21 +60,24 @@ export const ChangePasswordModal: React.FC = () => {
       setNewPasswordInput('');
       setConfirmPasswordInput('');
       setErrorMsg('');
+      setIsDismissed(true);
+      setIsChangePasswordModalOpen(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-zinc-950 border-2 border-purple-600 rounded-3xl max-w-md w-full p-6 md:p-8 space-y-6 shadow-2xl shadow-purple-950/80 text-white relative">
-        {/* Close button only if not mandatory change */}
-        {!isMandatory && (
-          <button
-            onClick={() => setIsChangePasswordModalOpen(false)}
-            className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 rounded-xl bg-zinc-900 border border-purple-900/40"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+        {/* Close button always accessible */}
+        <button
+          type="button"
+          onClick={handleCloseModal}
+          className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-purple-900/40 transition cursor-pointer"
+          title="Cerrar ventana"
+          aria-label="Cerrar ventana"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
         {/* Header Icon */}
         <div className="text-center space-y-2">
@@ -76,13 +87,13 @@ export const ChangePasswordModal: React.FC = () => {
 
           <h3 className="text-lg font-black text-white">
             {isMandatory
-              ? '🔒 Cambio Obligatorio de Contraseña'
+              ? '🔒 Cambio Inicial de Contraseña'
               : '🔑 Cambiar Contraseña de Cuenta'}
           </h3>
 
           <p className="text-xs text-purple-300">
             {isMandatory
-              ? 'Por políticas de seguridad, debes actualizar tu contraseña antes de acceder al sistema.'
+              ? 'Por políticas de seguridad, se sugiere actualizar la clave inicial. Puedes cambiarla ahora o cerrar esta ventana para continuar.'
               : `Actualiza la contraseña para la cuenta ${currentBackendUser?.name || 'Root'}.`}
           </p>
         </div>
@@ -92,8 +103,8 @@ export const ChangePasswordModal: React.FC = () => {
           <div className="p-3 bg-purple-950/90 border border-purple-500 rounded-2xl flex items-start gap-2.5 text-xs text-purple-200">
             <AlertTriangle className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
             <div>
-              <strong className="block text-white font-bold mb-0.5">Acceso Restringido Hasta Actualizar</strong>
-              Debes reemplazar tu clave por una clave personalizada de al menos 6 caracteres.
+              <strong className="block text-white font-bold mb-0.5">Clave de Fábrica Activa</strong>
+              Recomendamos reemplazar tu clave por una clave personalizada de al menos 6 caracteres.
             </div>
           </div>
         )}
@@ -145,13 +156,24 @@ export const ChangePasswordModal: React.FC = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition transform active:scale-95 mt-2"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Guardar Nueva Contraseña y Entrar</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="order-2 sm:order-1 flex-1 py-3 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-zinc-800 transition cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>{isMandatory ? 'Cerrar / Omitir' : 'Cancelar'}</span>
+            </button>
+
+            <button
+              type="submit"
+              className="order-1 sm:order-2 flex-2 py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition transform active:scale-95 cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Guardar Contraseña</span>
+            </button>
+          </div>
         </form>
 
         <p className="text-[10px] text-center text-zinc-400 italic">

@@ -863,8 +863,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Backend user management
   const addBackendUser = (userData: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => {
     const todayStr = new Date().toISOString().split('T')[0];
+    const usernameClean = userData.username
+      ? userData.username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '')
+      : userData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+
     const newUser: BackendUser = {
       ...userData,
+      username: usernameClean,
       id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: todayStr,
       lastLogin: 'Nunca',
@@ -877,9 +882,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addAuditLog(
       'Creación de Usuario Administrativo',
       'Niveles de Acceso',
-      `Creado usuario ${newUser.name} (${newUser.email}) con rol [${newUser.role}] y expiración de clave a ${newUser.passwordExpirationDays} días`
+      `Creado usuario @${newUser.username} - ${newUser.name} (${newUser.email}) con rol [${newUser.role}] y expiración de clave a ${newUser.passwordExpirationDays} días`
     );
-    showToast(`Usuario ${newUser.name} creado exitosamente con clave inicial`, 'success');
+    showToast(`Usuario @${newUser.username} (${newUser.name}) creado exitosamente`, 'success');
   };
 
   const updateBackendUserPermissions = (userId: string, permissions: BackendUserPermissions, role: AdminRole) => {
@@ -939,7 +944,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addAuditLog(
         'Eliminación de Usuario Administrativo',
         'Niveles de Acceso',
-        `Usuario administrativo ${usr.name} (${usr.email}, Rol: ${usr.role}) eliminado permanentemente.`
+        `Usuario administrativo ${usr.name} (@${usr.username || 'sin_alias'}, ${usr.email}, Rol: ${usr.role}) eliminado permanentemente.`
       );
       showToast(`Usuario administrativo ${usr.name} eliminado con éxito`, 'warning');
     }
@@ -970,9 +975,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
-    // Check other backend users
+    // Check other backend users by username, email, or name
     const foundUser = backendUsers.find(
-      (u) => u.email.toLowerCase() === cleanUser || u.name.toLowerCase().includes(cleanUser)
+      (u) =>
+        (u.username && u.username.toLowerCase() === cleanUser) ||
+        u.email.toLowerCase() === cleanUser ||
+        u.name.toLowerCase().includes(cleanUser)
     );
 
     if (foundUser) {

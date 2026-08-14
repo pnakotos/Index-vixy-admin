@@ -174,6 +174,7 @@ export interface BackendUserPermissions {
 export interface BackendUser {
   id: string;
   name: string;
+  username?: string; // Nombre de usuario para inicio de sesión y detalles
   email: string;
   role: AdminRole;
   avatarUrl?: string;
