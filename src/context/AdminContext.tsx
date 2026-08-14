@@ -34,6 +34,7 @@ import {
   INITIAL_API_CONFIG,
   INITIAL_STATE_RATES,
   INITIAL_UNIVERSITY_STATE_RATES,
+  INITIAL_CONTACT_SOCIAL,
 } from '../data/mockData';
 
 interface AdminContextType {
@@ -158,6 +159,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             stateRates: parsed.stateRates || INITIAL_STATE_RATES,
             universityStateRates: parsed.universityStateRates || INITIAL_UNIVERSITY_STATE_RATES,
             universityNationalEnabled: parsed.universityNationalEnabled ?? INITIAL_SYSTEM_CONFIG.universityNationalEnabled,
+            contactSocial: { ...INITIAL_CONTACT_SOCIAL, ...(parsed.contactSocial || {}) },
           };
         }
       } catch (e) {

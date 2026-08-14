@@ -280,6 +280,33 @@ export interface CustomPaymentMethod {
   enabled: boolean;
 }
 
+export interface ContactAndSocialConfig {
+  // Canales directos
+  whatsappNumber: string; // ej. '+58 412 555-0199'
+  whatsappMessage?: string; // ej. 'Hola Vixy, deseo información o soporte'
+  telegramUserOrLink: string; // ej. '@VixyVenezuela' o 'https://t.me/VixyVenezuela'
+  telegramChannelOrGroup?: string; // ej. 'https://t.me/VixyConductores'
+  supportEmail: string; // ej. 'soporte@vhixy.site'
+  corporateEmail?: string; // ej. 'contacto@vhixy.site'
+
+  // Redes Sociales
+  tiktokUrlOrUser: string; // ej. '@vixy_venezuela'
+  instagramUrlOrUser: string; // ej. '@vixy_venezuela'
+  facebookUrlOrPage: string; // ej. 'https://facebook.com/vixyvenezuela'
+  youtubeUrl?: string; // ej. 'https://youtube.com/@vixyvenezuela'
+  xTwitterUrl?: string; // ej. '@vixy_vzla'
+
+  // Números y datos para la Página Principal
+  dispatchPhone: string; // ej. '0800-VIXY-00 (0800-8499-00)'
+  emergencyPhone: string; // ej. '0800-VIXY-SOS / 911'
+  driverSupportPhone: string; // ej. '+58 424 555-1234'
+  officeAddress?: string; // ej. 'Av. Francisco de Miranda, Torre Vixy, Chacao, Caracas - Venezuela'
+  supportHours?: string; // ej. 'Atención 24 Horas / 7 Días a la semana'
+  coverageText?: string; // ej. '24 Estados de Venezuela'
+  activeDriversCount?: string; // ej. '+15,000'
+  satisfiedTripsCount?: string; // ej. '+250,000'
+}
+
 export interface ApiInterconnectionConfig {
   backendApiUrl: string;
   prodApiKey: string;
@@ -302,6 +329,7 @@ export interface SystemConfig {
   stateRates?: StateRatesMap; // Tarifas diferenciadas por Estado de Venezuela y Tipo de Servicio (Taxi, Moto Taxi, Delivery)
   universityStateRates?: StateUniversityRatesMap; // Tarifas Universitarias especiales diferenciadas por Estado de Venezuela
   universityNationalEnabled?: boolean; // Interruptor Master Nacional para la Modalidad Tarifa Universitaria
+  contactSocial?: ContactAndSocialConfig; // Configuración de Canales de Contacto, Redes Sociales y Números de Página Principal
   pagoMovil: PagoMovilConfig;
   zelle?: ZelleConfig;
   binancePay?: BinancePayConfig;

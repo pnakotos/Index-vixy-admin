@@ -15,6 +15,7 @@ import {
   StateServiceFares,
   UniversityFareConfig,
   StateUniversityRatesMap,
+  ContactAndSocialConfig,
 } from '../types';
 
 export const VENEZUELA_STATES: string[] = [
@@ -133,6 +134,33 @@ export const VENEZUELAN_BANKS = [
   { code: '0138', name: '0138 - Banco Plaza' },
 ];
 
+export const INITIAL_CONTACT_SOCIAL: ContactAndSocialConfig = {
+  // Canales directos
+  whatsappNumber: '+58 412-5550199',
+  whatsappMessage: '¡Hola Vixy Venezuela! Deseo solicitar información sobre la aplicación y atención al cliente.',
+  telegramUserOrLink: '@VixyVenezuela',
+  telegramChannelOrGroup: 'https://t.me/VixyConductoresOficial',
+  supportEmail: 'soporte@vhixy.site',
+  corporateEmail: 'contacto@vhixy.site',
+
+  // Redes Sociales
+  tiktokUrlOrUser: '@vixy_venezuela',
+  instagramUrlOrUser: '@vixy_venezuela',
+  facebookUrlOrPage: 'https://facebook.com/vixyvenezuela',
+  youtubeUrl: 'https://youtube.com/@vixyvenezuela',
+  xTwitterUrl: '@vixy_vzla',
+
+  // Números y datos para la Página Principal
+  dispatchPhone: '0800-VIXY-00 (0800-8499-00)',
+  emergencyPhone: '0800-VIXY-SOS / (0212) 999-9000',
+  driverSupportPhone: '+58 424-5551234',
+  officeAddress: 'Av. Francisco de Miranda, Centro Empresarial Chacao, Torre Vixy, Caracas - Venezuela',
+  supportHours: 'Atención 24 Horas / 7 Días a la semana (365 días)',
+  coverageText: '24 Estados de Venezuela',
+  activeDriversCount: '+15,000 Conductores',
+  satisfiedTripsCount: '+250,000 Viajes',
+};
+
 export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
   bcvRate: 58.50, // Rate VES/USD
   commissionPercent: 12.5, // 12.5% company commission
@@ -144,6 +172,7 @@ export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
   stateRates: INITIAL_STATE_RATES,
   universityStateRates: INITIAL_UNIVERSITY_STATE_RATES,
   universityNationalEnabled: true,
+  contactSocial: INITIAL_CONTACT_SOCIAL,
   pagoMovil: {
     bankName: '0102 - Banco de Venezuela',
     bankCode: '0102',

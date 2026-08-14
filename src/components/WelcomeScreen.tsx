@@ -22,9 +22,19 @@ import {
   X,
   CreditCard,
   DollarSign,
+  Phone,
+  Mail,
+  Send,
+  MessageSquare,
+  Share2,
+  Headphones,
+  Users,
+  Building,
 } from 'lucide-react';
 import { VixyRiderIllustration } from './VixyRiderIllustration';
+import { ContactModal } from './ContactModal';
 import { useAdmin } from '../context/AdminContext';
+import { INITIAL_CONTACT_SOCIAL } from '../data/mockData';
 
 interface WelcomeScreenProps {
   onOpenAdminLogin: () => void;
@@ -34,6 +44,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenAdminLogin }
   const { config, brandingMedia } = useAdmin();
 
   const [downloadModal, setDownloadModal] = useState<'driver' | 'passenger' | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [activeTabServices, setActiveTabServices] = useState<'taxi' | 'mototaxi' | 'delivery' | 'university'>('taxi');
   const [downloadSuccessToast, setDownloadSuccessToast] = useState<string | null>(null);
 
@@ -83,6 +94,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenAdminLogin }
 
           {/* Corner Quick Action Links (Requested by User) */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+            {/* 0. Contacto Link */}
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className="px-3 sm:px-4 py-2 rounded-xl bg-purple-950/90 hover:bg-purple-900 text-purple-200 border border-purple-600/70 text-xs font-extrabold transition flex items-center gap-1.5 shadow-sm hover:border-purple-300 hover:text-white cursor-pointer"
+              title="Canales de Contacto, WhatsApp, Telegram y Redes Sociales"
+            >
+              <Headphones className="w-4 h-4 text-purple-400" />
+              <span>Contacto</span>
+            </button>
+
             {/* 1. Driver App Download Link */}
             <button
               onClick={() => setDownloadModal('driver')}
@@ -364,18 +385,170 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenAdminLogin }
             </div>
           </div>
         </section>
+        {/* Contact & Social Section on Main Page (Requested by User) */}
+        <section className="mt-16 sm:mt-20 p-6 sm:p-8 bg-gradient-to-b from-zinc-950/95 via-purple-950/30 to-zinc-950/95 border border-purple-800/60 rounded-3xl backdrop-blur-md shadow-2xl space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/50 pb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-400 font-mono">
+                  Atención Directa & Redes Oficiales
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-emerald-400 font-mono">Soporte Activo</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white mt-1">
+                Contáctanos en Todo Momento
+              </h3>
+              <p className="text-xs text-zinc-300">
+                Atención al cliente 24/7 para pasajeros, conductores y comercios aliados en toda Venezuela.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-purple-900/40 border border-purple-400/30 shrink-0 cursor-pointer"
+            >
+              <Headphones className="w-4 h-4" />
+              <span>Ver Todos los Canales de Contacto</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* WhatsApp */}
+            <div className="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">💬</span>
+                <div>
+                  <h4 className="text-xs font-black text-white">WhatsApp Directo</h4>
+                  <p className="text-[11px] font-mono text-emerald-400">
+                    {config?.contactSocial?.whatsappNumber || INITIAL_CONTACT_SOCIAL.whatsappNumber}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`https://wa.me/${(config?.contactSocial?.whatsappNumber || INITIAL_CONTACT_SOCIAL.whatsappNumber).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(config?.contactSocial?.whatsappMessage || INITIAL_CONTACT_SOCIAL.whatsappMessage || 'Hola Vixy')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
+              >
+                <span>Chatear por WhatsApp</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            {/* Telegram */}
+            <div className="p-4 bg-sky-950/40 border border-sky-500/40 rounded-2xl space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                  <Send className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white">Telegram Oficial</h4>
+                  <p className="text-[11px] font-mono text-sky-400">
+                    {config?.contactSocial?.telegramUserOrLink || INITIAL_CONTACT_SOCIAL.telegramUserOrLink}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={
+                  (config?.contactSocial?.telegramUserOrLink || INITIAL_CONTACT_SOCIAL.telegramUserOrLink).startsWith('http')
+                    ? (config?.contactSocial?.telegramUserOrLink || INITIAL_CONTACT_SOCIAL.telegramUserOrLink)
+                    : `https://t.me/${(config?.contactSocial?.telegramUserOrLink || INITIAL_CONTACT_SOCIAL.telegramUserOrLink).replace(/^@/, '')}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
+              >
+                <span>Abrir en Telegram</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            {/* Redes Sociales */}
+            <div className="p-4 bg-purple-950/40 border border-purple-500/40 rounded-2xl space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Share2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white">Redes Sociales</h4>
+                  <p className="text-[11px] text-purple-300">TikTok, Instagram, FB</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={`https://tiktok.com/${(config?.contactSocial?.tiktokUrlOrUser || INITIAL_CONTACT_SOCIAL.tiktokUrlOrUser).startsWith('@') ? (config?.contactSocial?.tiktokUrlOrUser || INITIAL_CONTACT_SOCIAL.tiktokUrlOrUser) : '@' + (config?.contactSocial?.tiktokUrlOrUser || INITIAL_CONTACT_SOCIAL.tiktokUrlOrUser)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-1.5 bg-black hover:bg-zinc-800 text-white text-[11px] font-bold rounded-lg text-center border border-zinc-700"
+                >
+                  TikTok
+                </a>
+                <a
+                  href={`https://instagram.com/${(config?.contactSocial?.instagramUrlOrUser || INITIAL_CONTACT_SOCIAL.instagramUrlOrUser).replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-1.5 bg-pink-700 hover:bg-pink-600 text-white text-[11px] font-bold rounded-lg text-center"
+                >
+                  IG
+                </a>
+                <a
+                  href={config?.contactSocial?.facebookUrlOrPage || INITIAL_CONTACT_SOCIAL.facebookUrlOrPage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-[11px] font-bold rounded-lg text-center"
+                >
+                  FB
+                </a>
+              </div>
+            </div>
+
+            {/* Central Telefónica */}
+            <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white">Central de Despacho</h4>
+                  <p className="text-[10px] font-mono text-amber-300">
+                    {config?.contactSocial?.dispatchPhone || INITIAL_CONTACT_SOCIAL.dispatchPhone}
+                  </p>
+                </div>
+              </div>
+              <div className="text-[10px] text-zinc-400 flex items-center justify-between pt-1 border-t border-zinc-800">
+                <span>Emergencias SOS:</span>
+                <span className="font-bold text-rose-400">
+                  {config?.contactSocial?.emergencyPhone || INITIAL_CONTACT_SOCIAL.emergencyPhone}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-purple-900/40 bg-zinc-950/90 py-8 px-4 sm:px-8 mt-12 relative z-10 text-xs text-zinc-500">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <span className="font-black text-white text-sm">VIXY VENEZUELA</span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>© {new Date().getFullYear()} Todos los derechos reservados</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-zinc-400 font-mono">
+              Central: {config?.contactSocial?.dispatchPhone || INITIAL_CONTACT_SOCIAL.dispatchPhone}
+            </span>
           </div>
 
           <div className="flex items-center gap-4 flex-wrap justify-center">
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className="text-purple-300 hover:text-white transition font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <Headphones className="w-3.5 h-3.5 text-purple-400" />
+              <span>Contacto & Redes</span>
+            </button>
             <button
               onClick={() => setDownloadModal('driver')}
               className="text-zinc-400 hover:text-purple-300 transition"
@@ -397,6 +570,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onOpenAdminLogin }
           </div>
         </div>
       </footer>
+
+      {/* --- Contact & Social Modal --- */}
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+      />
 
       {/* --- Download Modal for Passenger / Driver App --- */}
       {downloadModal && (
