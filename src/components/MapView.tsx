@@ -156,7 +156,7 @@ export const MapView: React.FC = () => {
             <strong>Vehículo:</strong> ${driver.documents.vehicleModel}<br/>
             <strong>Placa:</strong> ${driver.documents.plateNumber}<br/>
             <strong>Teléfono:</strong> ${driver.phone}<br/>
-            <strong>Saldo:</strong> <span style="color: ${driver.balanceUSD < 0 ? '#e11d48' : '#059669'}; font-weight: bold;">$${driver.balanceUSD.toFixed(2)} USD</span>
+            <strong>Saldo:</strong> <span style="color: ${(driver.balanceUSD ?? 0) < 0 ? '#e11d48' : '#059669'}; font-weight: bold;">$${(driver.balanceUSD ?? 0).toFixed(2)} USD</span>
           </div>
         </div>
       `;

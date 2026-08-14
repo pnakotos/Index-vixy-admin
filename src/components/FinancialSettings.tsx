@@ -98,18 +98,30 @@ export const FinancialSettings: React.FC = () => {
 
   // Helper to get rates safely for a state & service
   const getFareForStateService = (stateName: string, service: ServiceType): ServiceFareConfig => {
-    if (stateRates[stateName] && stateRates[stateName][service]) {
-      return stateRates[stateName][service];
+    const defaults = createDefaultStateServiceFares(stateName)[service];
+    if (stateRates && stateRates[stateName] && stateRates[stateName][service]) {
+      return {
+        ...defaults,
+        ...stateRates[stateName][service],
+      };
     }
-    return createDefaultStateServiceFares(stateName)[service];
+    return defaults;
   };
 
   // Helper to get university rates safely for a state
   const getUniversityFareForState = (stateName: string): UniversityFareConfig => {
-    if (universityStateRates[stateName]) {
-      return universityStateRates[stateName];
+    const defaultVal = createDefaultUniversityFare(stateName);
+    if (universityStateRates && universityStateRates[stateName]) {
+      const current = universityStateRates[stateName];
+      return {
+        ...defaultVal,
+        ...current,
+        taxi: { ...defaultVal.taxi, ...(current.taxi || {}) },
+        mototaxi: { ...defaultVal.mototaxi, ...(current.mototaxi || {}) },
+        delivery: { ...defaultVal.delivery, ...(current.delivery || {}) },
+      };
     }
-    return createDefaultUniversityFare(stateName);
+    return defaultVal;
   };
 
   const handleOpenUniversityModal = (stateName: string) => {

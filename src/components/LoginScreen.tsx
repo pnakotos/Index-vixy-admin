@@ -8,10 +8,16 @@ import {
   Server,
   Zap,
   Image as ImageIcon,
+  ArrowLeft,
+  Home,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 
-export const LoginScreen: React.FC = () => {
+interface LoginScreenProps {
+  onBackToWelcome?: () => void;
+}
+
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onBackToWelcome }) => {
   const { login, brandingMedia } = useAdmin();
 
   const [usernameInput, setUsernameInput] = useState('');
@@ -71,6 +77,16 @@ export const LoginScreen: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {onBackToWelcome && (
+            <button
+              onClick={onBackToWelcome}
+              className="inline-flex items-center gap-1.5 text-xs text-purple-200 bg-purple-950/90 hover:bg-purple-900 px-3 py-1.5 rounded-xl border border-purple-700/80 transition"
+              title="Volver a la Página de Bienvenida Pública"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-purple-400" />
+              <span>Volver a Bienvenida</span>
+            </button>
+          )}
           <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-purple-300 bg-purple-950/80 px-3 py-1.5 rounded-xl border border-purple-800">
             <ShieldCheck className="w-4 h-4 text-purple-400" />
             <span>Sistema Web Seguro SSL</span>

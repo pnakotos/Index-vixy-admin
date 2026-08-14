@@ -489,12 +489,12 @@ export const EarningsAuditView: React.FC = () => {
                         <span>{item.periodKey}</span>
                       </td>
                       <td className="p-3 text-zinc-300">{item.servicesCount} carreras</td>
-                      <td className="p-3 font-bold text-white">${item.billedUSD.toFixed(2)}</td>
-                      <td className="p-3 font-bold text-purple-300">${item.commissionUSD.toFixed(2)}</td>
+                      <td className="p-3 font-bold text-white">${(item.billedUSD ?? 0).toFixed(2)}</td>
+                      <td className="p-3 font-bold text-purple-300">${(item.commissionUSD ?? 0).toFixed(2)}</td>
                       <td className="p-3 text-purple-400">
-                        Bs. {(item.commissionUSD * config.bcvRate).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        Bs. {((item.commissionUSD ?? 0) * (config?.bcvRate ?? 58.5)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="p-3 text-emerald-400">${item.driverEarningsUSD.toFixed(2)}</td>
+                      <td className="p-3 text-emerald-400">${(item.driverEarningsUSD ?? 0).toFixed(2)}</td>
                     </tr>
                   ))
                 )}
@@ -561,15 +561,15 @@ export const EarningsAuditView: React.FC = () => {
                           </span>
                         </td>
                         <td className="p-3 font-mono font-bold text-zinc-300">{drv.servicesCount}</td>
-                        <td className="p-3 font-mono font-bold text-white">${drv.totalBilledUSD.toFixed(2)}</td>
+                        <td className="p-3 font-mono font-bold text-white">${(drv.totalBilledUSD ?? 0).toFixed(2)}</td>
                         <td className="p-3 font-mono font-black text-purple-300">
-                          ${drv.commissionUSD.toFixed(2)}
+                          ${(drv.commissionUSD ?? 0).toFixed(2)}
                         </td>
                         <td className="p-3 font-mono text-purple-400">
-                          Bs. {(drv.commissionUSD * config.bcvRate).toFixed(2)}
+                          Bs. {((drv.commissionUSD ?? 0) * (config?.bcvRate ?? 58.5)).toFixed(2)}
                         </td>
                         <td className="p-3 font-mono font-bold text-emerald-400">
-                          ${drv.driverEarningsUSD.toFixed(2)}
+                          ${(drv.driverEarningsUSD ?? 0).toFixed(2)}
                         </td>
                       </tr>
                     );
@@ -633,12 +633,12 @@ export const EarningsAuditView: React.FC = () => {
                         </td>
                         <td className="p-3 font-mono text-zinc-400">{cli.clientPhone}</td>
                         <td className="p-3 font-mono font-bold text-zinc-300">{cli.servicesCount}</td>
-                        <td className="p-3 font-mono font-bold text-white">${cli.totalSpentUSD.toFixed(2)}</td>
+                        <td className="p-3 font-mono font-bold text-white">${(cli.totalSpentUSD ?? 0).toFixed(2)}</td>
                         <td className="p-3 font-mono text-zinc-400">
-                          Bs. {(cli.totalSpentUSD * config.bcvRate).toFixed(2)}
+                          Bs. {((cli.totalSpentUSD ?? 0) * (config?.bcvRate ?? 58.5)).toFixed(2)}
                         </td>
                         <td className="p-3 font-mono font-black text-purple-300">
-                          ${cli.commissionGeneratedUSD.toFixed(2)}
+                          ${(cli.commissionGeneratedUSD ?? 0).toFixed(2)}
                         </td>
                       </tr>
                     );
@@ -705,14 +705,14 @@ export const EarningsAuditView: React.FC = () => {
                         <p className="text-purple-300 truncate">🏁 {srv.destination}</p>
                       </td>
                       <td className="p-3 font-mono">
-                        <p className="font-bold text-white">${srv.fareUSD.toFixed(2)}</p>
-                        <p className="text-[10px] text-zinc-400">Bs. {srv.fareVES.toFixed(2)}</p>
+                        <p className="font-bold text-white">${(srv.fareUSD ?? 0).toFixed(2)}</p>
+                        <p className="text-[10px] text-zinc-400">Bs. {(srv.fareVES ?? 0).toFixed(2)}</p>
                       </td>
                       <td className="p-3 font-mono">
                         <p className="font-black text-purple-300">
-                          ${srv.commissionUSD.toFixed(2)} ({srv.commissionPercent}%)
+                          ${(srv.commissionUSD ?? 0).toFixed(2)} ({srv.commissionPercent ?? 12.5}%)
                         </p>
-                        <p className="text-[10px] text-purple-400">Bs. {srv.commissionVES.toFixed(2)}</p>
+                        <p className="text-[10px] text-purple-400">Bs. {(srv.commissionVES ?? 0).toFixed(2)}</p>
                       </td>
                       <td className="p-3">
                         <span className="px-2 py-1 rounded-lg bg-zinc-900 border border-purple-900/40 text-xs font-bold text-zinc-300">

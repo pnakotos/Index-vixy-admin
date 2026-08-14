@@ -31,6 +31,8 @@ import {
   INITIAL_COMPLETED_SERVICES,
   INITIAL_BRANDING_MEDIA,
   INITIAL_API_CONFIG,
+  INITIAL_STATE_RATES,
+  INITIAL_UNIVERSITY_STATE_RATES,
 } from '../data/mockData';
 
 interface AdminContextType {
@@ -117,7 +119,31 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Persistence via localStorage or default fallback
   const [config, setConfig] = useState<SystemConfig>(() => {
     const saved = localStorage.getItem('vixy_config');
-    return saved ? JSON.parse(saved) : INITIAL_SYSTEM_CONFIG;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            ...INITIAL_SYSTEM_CONFIG,
+            ...parsed,
+            bcvRate: typeof parsed.bcvRate === 'number' && !isNaN(parsed.bcvRate) ? parsed.bcvRate : INITIAL_SYSTEM_CONFIG.bcvRate,
+            baseFareUSD: typeof parsed.baseFareUSD === 'number' && !isNaN(parsed.baseFareUSD) ? parsed.baseFareUSD : INITIAL_SYSTEM_CONFIG.baseFareUSD,
+            baseDistanceKm: typeof parsed.baseDistanceKm === 'number' && !isNaN(parsed.baseDistanceKm) ? parsed.baseDistanceKm : INITIAL_SYSTEM_CONFIG.baseDistanceKm,
+            additionalKmRateUSD: typeof parsed.additionalKmRateUSD === 'number' && !isNaN(parsed.additionalKmRateUSD) ? parsed.additionalKmRateUSD : INITIAL_SYSTEM_CONFIG.additionalKmRateUSD,
+            commissionPercent: typeof parsed.commissionPercent === 'number' && !isNaN(parsed.commissionPercent) ? parsed.commissionPercent : INITIAL_SYSTEM_CONFIG.commissionPercent,
+            negativeBalanceThreshold: typeof parsed.negativeBalanceThreshold === 'number' && !isNaN(parsed.negativeBalanceThreshold) ? parsed.negativeBalanceThreshold : INITIAL_SYSTEM_CONFIG.negativeBalanceThreshold,
+            pagoMovil: { ...INITIAL_SYSTEM_CONFIG.pagoMovil, ...(parsed.pagoMovil || {}) },
+            gateways: { ...INITIAL_SYSTEM_CONFIG.gateways, ...(parsed.gateways || {}) },
+            stateRates: parsed.stateRates || INITIAL_STATE_RATES,
+            universityStateRates: parsed.universityStateRates || INITIAL_UNIVERSITY_STATE_RATES,
+            universityNationalEnabled: parsed.universityNationalEnabled ?? INITIAL_SYSTEM_CONFIG.universityNationalEnabled,
+          };
+        }
+      } catch (e) {
+        console.warn('Error parsing vixy_config:', e);
+      }
+    }
+    return INITIAL_SYSTEM_CONFIG;
   });
 
   const [drivers, setDrivers] = useState<Driver[]>(() => {

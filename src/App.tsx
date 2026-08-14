@@ -16,6 +16,7 @@ import { UserPermissionsView } from './components/UserPermissionsView';
 import { AuditLogsView } from './components/AuditLogsView';
 import { ToastNotification } from './components/ToastNotification';
 import { LoginScreen } from './components/LoginScreen';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { WebDeploymentGuideModal } from './components/WebDeploymentGuideModal';
 
@@ -44,9 +45,13 @@ const MainContent: React.FC = () => {
 
 const AppContainer: React.FC = () => {
   const { isAuthenticated } = useAdmin();
+  const [guestView, setGuestView] = React.useState<'welcome' | 'login'>('welcome');
 
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    if (guestView === 'welcome') {
+      return <WelcomeScreen onOpenAdminLogin={() => setGuestView('login')} />;
+    }
+    return <LoginScreen onBackToWelcome={() => setGuestView('welcome')} />;
   }
 
   return (

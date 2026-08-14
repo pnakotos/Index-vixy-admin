@@ -244,18 +244,18 @@ export const PaymentVerification: React.FC = () => {
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-600 font-sans">Monto Recibido:</span>
                     <strong className="text-emerald-600 text-sm">
-                      {payment.amountVES.toFixed(2)} VES
+                      {(payment.amountVES ?? 0).toFixed(2)} VES
                     </strong>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-600 font-sans">Abono Equivalente:</span>
                     <strong className="text-slate-900 text-xs">
-                      ${payment.amountUSD.toFixed(2)} USD
+                      ${(payment.amountUSD ?? 0).toFixed(2)} USD
                     </strong>
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                     <span>Método: {payment.paymentMethod}</span>
-                    <span>Tasa: {payment.bcvRateUsed.toFixed(2)} Bs/$</span>
+                    <span>Tasa: {(payment.bcvRateUsed ?? 58.5).toFixed(2)} Bs/$</span>
                   </div>
                 </div>
 
@@ -349,10 +349,10 @@ export const PaymentVerification: React.FC = () => {
                 Depositante: <strong className="text-slate-900">{selectedPayment.entityName}</strong>
               </p>
               <p className="text-slate-600">
-                Monto en Bs: <strong className="text-emerald-600">{selectedPayment.amountVES.toFixed(2)} VES</strong>
+                Monto en Bs: <strong className="text-emerald-600">{(selectedPayment.amountVES ?? 0).toFixed(2)} VES</strong>
               </p>
               <p className="text-slate-600">
-                Abono USD: <strong className="text-slate-900">${selectedPayment.amountUSD.toFixed(2)} USD</strong>
+                Abono USD: <strong className="text-slate-900">${(selectedPayment.amountUSD ?? 0).toFixed(2)} USD</strong>
               </p>
             </div>
 

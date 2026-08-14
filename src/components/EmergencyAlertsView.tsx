@@ -149,7 +149,7 @@ export const EmergencyAlertsView: React.FC = () => {
                       {emg.locationName}
                     </p>
                     <p className="text-[10px] text-slate-500 font-mono mt-1">
-                      GPS: {emg.lat.toFixed(5)}, {emg.lng.toFixed(5)}
+                      GPS: {(emg.lat ?? 0).toFixed(5)}, {(emg.lng ?? 0).toFixed(5)}
                     </p>
                   </div>
 

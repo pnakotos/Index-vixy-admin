@@ -103,11 +103,11 @@ export const Navbar: React.FC = () => {
             ) : (
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-purple-300 font-mono">
-                  {config.bcvRate.toFixed(2)} VES/$
+                  {(config?.bcvRate ?? 58.50).toFixed(2)} VES/$
                 </span>
                 <button
                   onClick={() => {
-                    setTempRate(config.bcvRate.toString());
+                    setTempRate((config?.bcvRate ?? 58.50).toString());
                     setIsEditingRate(true);
                   }}
                   className="text-zinc-500 hover:text-purple-400 transition p-0.5"
