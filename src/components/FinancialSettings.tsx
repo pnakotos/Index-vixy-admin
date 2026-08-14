@@ -30,6 +30,12 @@ import {
   ChevronUp,
   Layers,
   GraduationCap,
+  QrCode,
+  Landmark,
+  Banknote,
+  Wallet,
+  Edit3,
+  Plus,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { calculateTripFare } from '../utils/fareCalculator';
@@ -48,11 +54,13 @@ import {
   UniversityFareConfig,
 } from '../types';
 import { UniversityTariffModal } from './UniversityTariffModal';
+import { PaymentMethodsEditorModal } from './PaymentMethodsEditorModal';
 
 export const FinancialSettings: React.FC = () => {
   const {
     config,
     updateConfig,
+    togglePaymentGateway,
     brandingMedia,
     updateBrandingMedia,
     apiConfig,
@@ -61,7 +69,20 @@ export const FinancialSettings: React.FC = () => {
   } = useAdmin();
 
   // Active sub-tab state
-  const [activeSubTab, setActiveSubTab] = useState<'financial' | 'branding' | 'apiKeys'>('financial');
+  const [activeSubTab, setActiveSubTab] = useState<'financial' | 'paymentMethods' | 'branding' | 'apiKeys'>('financial');
+
+  // Payment Methods Editor Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentModalTab, setPaymentModalTab] = useState<
+    'pagoMovil' | 'zelle' | 'binancePay' | 'bankTransfer' | 'cashPayment' | 'cardPos' | 'custom'
+  >('pagoMovil');
+
+  const handleOpenPaymentEditor = (
+    tab: 'pagoMovil' | 'zelle' | 'binancePay' | 'bankTransfer' | 'cashPayment' | 'cardPos' | 'custom'
+  ) => {
+    setPaymentModalTab(tab);
+    setIsPaymentModalOpen(true);
+  };
 
   // Local state for Financials & Service Rates
   const [bcvRateInput, setBcvRateInput] = useState(config.bcvRate.toString());
@@ -355,7 +376,7 @@ export const FinancialSettings: React.FC = () => {
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
         <button
           onClick={() => setActiveSubTab('financial')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
@@ -365,7 +386,19 @@ export const FinancialSettings: React.FC = () => {
           }`}
         >
           <DollarSign className="w-4 h-4" />
-          <span>Tasa BCV & Pasarelas de Pago</span>
+          <span>Tasa BCV & Tarifas</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('paymentMethods')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+            activeSubTab === 'paymentMethods'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span>Métodos de Pago & Cuentas Receptoras</span>
         </button>
 
         <button
@@ -1083,187 +1116,244 @@ export const FinancialSettings: React.FC = () => {
             )}
           </div>
 
-          {/* Pago Móvil & Admin Contact Details */}
-          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4 shadow-xs">
-            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Smartphone className="w-4 h-4 text-blue-600" />
-              Datos Oficiales para Pago Móvil Bolívares y Contacto
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">
-                  Banco Receptor Pago Móvil:
-                </label>
-                <input
-                  type="text"
-                  value={pagoBank}
-                  onChange={(e) => setPagoBank(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                  required
-                />
+          {/* Pasarelas de Pago & Cuentas Receptoras */}
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                  Métodos de Pago y Cuentas Receptoras
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Activa, desactiva o actualiza los datos oficiales (Pago Móvil, Zelle, Binance Pay, Cuentas Bancarias, etc.)
+                </p>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">
-                  Teléfono Pago Móvil:
-                </label>
-                <input
-                  type="text"
-                  value={pagoPhone}
-                  onChange={(e) => setPagoPhone(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">
-                  RIF o Cédula del Titular:
-                </label>
-                <input
-                  type="text"
-                  value={pagoCif}
-                  onChange={(e) => setPagoCif(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">
-                  Nombre del Titular de la Cuenta:
-                </label>
-                <input
-                  type="text"
-                  value={pagoHolder}
-                  onChange={(e) => setPagoHolder(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5 md:col-span-2">
-                <label className="font-bold text-slate-700 block">
-                  Correo Electrónico Administrativo de Notificaciones:
-                </label>
-                <input
-                  type="email"
-                  value={adminEmailInput}
-                  onChange={(e) => setAdminEmailInput(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                  required
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => handleOpenPaymentEditor('pagoMovil')}
+                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition shrink-0 cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Editar Todos los Métodos</span>
+              </button>
             </div>
-          </div>
 
-          {/* Payment Gateway Toggles */}
-          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4 shadow-xs">
-            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <CreditCard className="w-4 h-4 text-blue-600" />
-              Modificación de Pasarelas y Métodos de Pago Activos
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-              <div
-                onClick={() => handleGatewayToggle('pagoMovil')}
-                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition ${
-                  gateways.pagoMovil
-                    ? 'bg-emerald-50 border-emerald-300 text-slate-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                }`}
-              >
-                <span>📱 Pago Móvil VES</span>
-                <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
-                    gateways.pagoMovil
-                      ? 'bg-emerald-600 border-emerald-600 text-white font-black'
-                      : 'border-slate-300'
-                  }`}
-                >
-                  {gateways.pagoMovil && '✓'}
-                </span>
+            {/* Quick overview cards for all payment gateways */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+              {/* 1. Pago Móvil VES */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                      📱
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Pago Móvil VES</h4>
+                      <p className="text-[11px] text-slate-500 font-mono">{config.pagoMovil?.bankName || pagoBank || 'Sin configurar'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('pagoMovil')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.gateways.pagoMovil
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.pagoMovil ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-mono">{config.pagoMovil?.phone || pagoPhone}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('pagoMovil')}
+                    className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
               </div>
 
-              <div
-                onClick={() => handleGatewayToggle('zelle')}
-                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition ${
-                  gateways.zelle
-                    ? 'bg-emerald-50 border-emerald-300 text-slate-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                }`}
-              >
-                <span>💜 Zelle USD</span>
-                <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
-                    gateways.zelle
-                      ? 'bg-emerald-600 border-emerald-600 text-white font-black'
-                      : 'border-slate-300'
-                  }`}
-                >
-                  {gateways.zelle && '✓'}
-                </span>
+              {/* 2. Zelle USD */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
+                      💜
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Zelle USD</h4>
+                      <p className="text-[11px] text-slate-500 truncate max-w-[130px]">{config.zelle?.email || 'Sin configurar'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('zelle')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.gateways.zelle
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.zelle ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 truncate max-w-[130px]">{config.zelle?.holderName || 'Titular'}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('zelle')}
+                    className="text-purple-600 hover:text-purple-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
               </div>
 
-              <div
-                onClick={() => handleGatewayToggle('binancePay')}
-                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition ${
-                  gateways.binancePay
-                    ? 'bg-emerald-50 border-emerald-300 text-slate-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                }`}
-              >
-                <span>🟡 Binance Pay (USDT)</span>
-                <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
-                    gateways.binancePay
-                      ? 'bg-emerald-600 border-emerald-600 text-white font-black'
-                      : 'border-slate-300'
-                  }`}
-                >
-                  {gateways.binancePay && '✓'}
-                </span>
+              {/* 3. Binance Pay */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">
+                      🟡
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Binance Pay (USDT)</h4>
+                      <p className="text-[11px] text-slate-500 font-mono truncate max-w-[130px]">{config.binancePay?.binancePayId || 'Pay ID'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('binancePay')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.gateways.binancePay
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.binancePay ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 truncate max-w-[130px]">{config.binancePay?.merchantName || 'Binance'}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('binancePay')}
+                    className="text-amber-600 hover:text-amber-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
               </div>
 
-              <div
-                onClick={() => handleGatewayToggle('efectivo')}
-                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition ${
-                  gateways.efectivo
-                    ? 'bg-emerald-50 border-emerald-300 text-slate-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                }`}
-              >
-                <span>💵 Efectivo USD / VES</span>
-                <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
-                    gateways.efectivo
-                      ? 'bg-emerald-600 border-emerald-600 text-white font-black'
-                      : 'border-slate-300'
-                  }`}
-                >
-                  {gateways.efectivo && '✓'}
-                </span>
+              {/* 4. Transferencia Bancaria */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+                      🏛️
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Transferencia Bancaria</h4>
+                      <p className="text-[11px] text-slate-500 truncate max-w-[130px]">{config.bankTransfer?.bankName || 'Banco'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('bankTransfer')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.bankTransfer?.isActive
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.bankTransfer?.isActive ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-mono text-[10px]">{config.bankTransfer?.accountNumber?.slice(0, 10)}...</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('bankTransfer')}
+                    className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
               </div>
 
-              <div
-                onClick={() => handleGatewayToggle('tarjeta')}
-                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition ${
-                  gateways.tarjeta
-                    ? 'bg-emerald-50 border-emerald-300 text-slate-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                }`}
-              >
-                <span>💳 Tarjeta de Débito/Crédito</span>
-                <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
-                    gateways.tarjeta
-                      ? 'bg-emerald-600 border-emerald-600 text-white font-black'
-                      : 'border-slate-300'
-                  }`}
-                >
-                  {gateways.tarjeta && '✓'}
-                </span>
+              {/* 5. Efectivo */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                      💵
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Efectivo USD / VES</h4>
+                      <p className="text-[11px] text-slate-500">Pago directo en mano</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('efectivo')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.gateways.efectivo
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.efectivo ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 text-[10px]">Acepta vuelto</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('cashPayment')}
+                    className="text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 6. Tarjeta / POS */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                      💳
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">Punto de Venta / Tarjeta</h4>
+                      <p className="text-[11px] text-slate-500">POS inalámbrico</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('tarjeta')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                      config.gateways.tarjeta
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.tarjeta ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+                <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 text-[10px]">{config.cardPos?.posTerminalName || 'POS Terminal'}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('cardPos')}
+                    className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Editar</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1278,6 +1368,436 @@ export const FinancialSettings: React.FC = () => {
             </button>
           </div>
         </form>
+      )}
+
+      {/* SUB-TAB: PAYMENT METHODS & RECEPTION ACCOUNTS EDITOR */}
+      {activeSubTab === 'paymentMethods' && (
+        <div className="space-y-6">
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-indigo-600" />
+                  Administrador Central de Métodos de Pago y Cuentas Receptoras
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Actualiza números de teléfono, bancos, cédulas/RIF, correos de Zelle, Pay ID de Binance y códigos QR que visualizan conductores y pasajeros.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleOpenPaymentEditor('custom')}
+                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-xs transition shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Añadir Billetera / Pasarela</span>
+              </button>
+            </div>
+
+            {/* Grid of detailed payment method management cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+              {/* 1. PAGO MÓVIL CARD */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xl">
+                      📱
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Pago Móvil Bolívares (VES)</h4>
+                      <p className="text-slate-500 text-[11px]">Pagos interbancarios inmediatos</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.gateways.pagoMovil
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.pagoMovil ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Banco:</span>
+                    <span className="font-bold text-slate-800">{config.pagoMovil?.bankName || pagoBank || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Teléfono:</span>
+                    <span className="font-bold text-slate-800">{config.pagoMovil?.phone || pagoPhone || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Cédula / RIF:</span>
+                    <span className="font-bold text-slate-800">{config.pagoMovil?.cif || pagoCif || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Titular:</span>
+                    <span className="font-bold text-slate-800">{config.pagoMovil?.holderName || pagoHolder || 'No definido'}</span>
+                  </div>
+                  {config.pagoMovil?.qrImageUrl && (
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <span className="text-slate-500 font-sans">Código QR:</span>
+                      <span className="text-emerald-600 font-sans font-bold text-[10px]">✓ Configurado</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('pagoMovil')}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
+                  >
+                    {config.gateways.pagoMovil ? 'Desactivar método' : 'Activar método'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('pagoMovil')}
+                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Datos</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. ZELLE USD CARD */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-black text-xl">
+                      💜
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Zelle (USD)</h4>
+                      <p className="text-slate-500 text-[11px]">Transferencias bancarias en USA</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.gateways.zelle
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.zelle ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Correo Zelle:</span>
+                    <span className="font-bold text-slate-800">{config.zelle?.email || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Titular:</span>
+                    <span className="font-bold text-slate-800">{config.zelle?.holderName || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Teléfono Zelle:</span>
+                    <span className="font-bold text-slate-800">{config.zelle?.phone || 'Opcional'}</span>
+                  </div>
+                  {config.zelle?.qrImageUrl && (
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <span className="text-slate-500 font-sans">Código QR:</span>
+                      <span className="text-emerald-600 font-sans font-bold text-[10px]">✓ Configurado</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('zelle')}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
+                  >
+                    {config.gateways.zelle ? 'Desactivar método' : 'Activar método'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('zelle')}
+                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Datos</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. BINANCE PAY CARD */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-black text-xl">
+                      🟡
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Binance Pay (USDT / Crypto)</h4>
+                      <p className="text-slate-500 text-[11px]">Pagos cripto sin comisiones</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.gateways.binancePay
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.binancePay ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Binance Pay ID:</span>
+                    <span className="font-bold text-slate-800">{config.binancePay?.binancePayId || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Email Registrado:</span>
+                    <span className="font-bold text-slate-800">{config.binancePay?.binanceEmail || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Comercio / Nickname:</span>
+                    <span className="font-bold text-slate-800">{config.binancePay?.merchantName || 'No definido'}</span>
+                  </div>
+                  {config.binancePay?.qrImageUrl && (
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <span className="text-slate-500 font-sans">Código QR Binance:</span>
+                      <span className="text-emerald-600 font-sans font-bold text-[10px]">✓ Configurado</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('binancePay')}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
+                  >
+                    {config.gateways.binancePay ? 'Desactivar método' : 'Activar método'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('binancePay')}
+                    className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Datos</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. TRANSFERENCIA BANCARIA CARD */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-black text-xl">
+                      🏛️
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Transferencia Bancaria Nacional</h4>
+                      <p className="text-slate-500 text-[11px]">Cuenta corriente / ahorro en Bolívares</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.bankTransfer?.isActive
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.bankTransfer?.isActive ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Banco:</span>
+                    <span className="font-bold text-slate-800">{config.bankTransfer?.bankName || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Número de Cuenta (20 Dígitos):</span>
+                    <span className="font-bold text-slate-800">{config.bankTransfer?.accountNumber || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">RIF / Cédula:</span>
+                    <span className="font-bold text-slate-800">{config.bankTransfer?.cif || 'No definido'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Titular:</span>
+                    <span className="font-bold text-slate-800">{config.bankTransfer?.holderName || 'No definido'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('bankTransfer')}
+                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Datos</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 5. EFECTIVO CARD */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xl">
+                      💵
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Efectivo USD / VES</h4>
+                      <p className="text-slate-500 text-[11px]">Cobro directo al abordar o finalizar</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.gateways.efectivo
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.efectivo ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Monedas aceptadas:</span>
+                    <span className="font-bold text-slate-800">
+                      {config.cashPayment?.acceptUSD ? 'Dólares (USD)' : ''}
+                      {config.cashPayment?.acceptUSD && config.cashPayment?.acceptVES ? ' & ' : ''}
+                      {config.cashPayment?.acceptVES ? 'Bolívares (VES)' : ''}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Acepta cambio/vuelto:</span>
+                    <span className="font-bold text-slate-800">{config.cashPayment?.acceptChange ? 'Sí' : 'No'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Instrucciones:</span>
+                    <span className="font-bold text-slate-800 truncate max-w-[180px]">{config.cashPayment?.instructions}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('efectivo')}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
+                  >
+                    {config.gateways.efectivo ? 'Desactivar método' : 'Activar método'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('cashPayment')}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Reglas</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 6. TARJETA DE DÉBITO / CRÉDITO POS */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center font-black text-xl">
+                      💳
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">Punto de Venta / Tarjeta</h4>
+                      <p className="text-slate-500 text-[11px]">Terminales POS móviles autorizados</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                      config.gateways.tarjeta
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                    }`}
+                  >
+                    {config.gateways.tarjeta ? '✓ Habilitado' : '✕ Deshabilitado'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 bg-white p-3.5 rounded-xl border border-slate-200/80 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Terminal:</span>
+                    <span className="font-bold text-slate-800">{config.cardPos?.posTerminalName || 'POS Terminal'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Acepta Contactless (NFC):</span>
+                    <span className="font-bold text-slate-800">{config.cardPos?.supportsContactless ? 'Sí (NFC)' : 'No'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Acepta Tarjeta Internacional:</span>
+                    <span className="font-bold text-slate-800">{config.cardPos?.supportsInternationalCards ? 'Sí' : 'No'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => togglePaymentGateway('tarjeta')}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
+                  >
+                    {config.gateways.tarjeta ? 'Desactivar método' : 'Activar método'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentEditor('cardPos')}
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Configuración</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Payment Methods Section */}
+            {config.customPaymentMethods && config.customPaymentMethods.length > 0 && (
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-purple-600" />
+                  Billeteras y Pasarelas Personalizadas ({config.customPaymentMethods.length})
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {config.customPaymentMethods.map((cm) => (
+                    <div
+                      key={cm.id}
+                      className="p-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between shadow-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs">
+                          {cm.icon || '💳'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 text-xs">{cm.name}</p>
+                          <p className="text-[10px] text-slate-500 font-mono truncate max-w-[120px]">{cm.accountIdentifier}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenPaymentEditor('custom')}
+                        className="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-[10px] cursor-pointer"
+                      >
+                        Editar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* TAB 2: BRANDING & WALLPAPER (ADMINISTRATOR ONLY) */}
@@ -1609,6 +2129,13 @@ export const FinancialSettings: React.FC = () => {
         onToggleNational={(enabled) => setUniversityNationalEnabled(enabled)}
         onSave={handleSaveUniversityFare}
         onApplyToAllStates={handleApplyUniversityFareToAllStates}
+      />
+
+      {/* Modal Central de Edición de Métodos de Pago y Cuentas Receptoras */}
+      <PaymentMethodsEditorModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        initialTab={paymentModalTab}
       />
     </div>
   );

@@ -111,6 +111,28 @@ export const INITIAL_UNIVERSITY_STATE_RATES: StateUniversityRatesMap = VENEZUELA
   return acc;
 }, {} as StateUniversityRatesMap);
 
+export const VENEZUELAN_BANKS = [
+  { code: '0102', name: '0102 - Banco de Venezuela' },
+  { code: '0134', name: '0134 - Banesco Banco Universal' },
+  { code: '0105', name: '0105 - Banco Mercantil' },
+  { code: '0108', name: '0108 - Banco Provincial (BBVA)' },
+  { code: '0172', name: '0172 - Bancamiga Banco Universal' },
+  { code: '0191', name: '0191 - Banco Nacional de Crédito (BNC)' },
+  { code: '0114', name: '0114 - Bancaribe' },
+  { code: '0115', name: '0115 - Banco Exterior' },
+  { code: '0175', name: '0175 - Banco Bicentenario' },
+  { code: '0163', name: '0163 - Banco del Tesoro' },
+  { code: '0174', name: '0174 - Banplus Banco Universal' },
+  { code: '0137', name: '0137 - Banco Sofitasa' },
+  { code: '0151', name: '0151 - Banco Fondo Común (BFC)' },
+  { code: '0166', name: '0166 - Banco Agrícola de Venezuela' },
+  { code: '0168', name: '0168 - Bancrecer' },
+  { code: '0171', name: '0171 - Banco Activo' },
+  { code: '0177', name: '0177 - BANFANB' },
+  { code: '0128', name: '0128 - Banco Caroní' },
+  { code: '0138', name: '0138 - Banco Plaza' },
+];
+
 export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
   bcvRate: 58.50, // Rate VES/USD
   commissionPercent: 12.5, // 12.5% company commission
@@ -128,11 +150,71 @@ export const INITIAL_SYSTEM_CONFIG: SystemConfig = {
     cif: 'J-501239874',
     phone: '0412-5550199',
     holderName: 'Vixy Servicios C.A.',
+    instructions: 'Por favor reportar los últimos 6 o 12 dígitos del número de referencia bancaria tras realizar la transferencia por Pago Móvil.',
   },
+  zelle: {
+    email: 'pagos@vhixy.site',
+    holderName: 'Vixy Mobility Corp',
+    phone: '+1 (305) 890-1234',
+    memoRequirement: 'Colocar únicamente tu número de teléfono registrado en Vixy',
+    instructions: 'No colocar palabras como "carrera", "taxi" ni "Vixy" en el concepto de Zelle. Solo tu número celular.',
+  },
+  binancePay: {
+    payId: '298371904',
+    email: 'binance@vhixy.site',
+    nickname: 'VixyOfficial',
+    supportedNetworks: 'USDT (Red BNB Smart Chain BEP20 o TRON TRC20)',
+    walletAddress: '0x71C28B5E89a1739c9fA44Bf28e281B94C849B11',
+    qrImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=binancepay://pay?id=298371904',
+    instructions: 'Transferencias directas por Binance Pay sin comisión de red interna o envío de USDT a la billetera corporativa.',
+  },
+  bankTransfer: {
+    bankName: '0102 - Banco de Venezuela',
+    bankCode: '0102',
+    accountNumber: '01020182740001892044',
+    accountType: 'corriente',
+    cif: 'J-501239874',
+    holderName: 'Vixy Servicios C.A.',
+    instructions: 'Transferencias desde el mismo banco se procesan de inmediato. Transferencias interbancarias pueden demorar 24 horas hábiles.',
+  },
+  cashPayment: {
+    acceptedCurrencies: ['USD', 'VES', 'EUR'],
+    maxBillDenomination: 'Billetes de $50 USD / $100 USD requieren aviso previo al conductor',
+    instructions: 'Entregar monto exacto o acordar vuelto antes de iniciar la carrera. No se reciben billetes rotos ni manchados.',
+  },
+  cardPos: {
+    processorName: 'Punto de Venta Inalámbrico / MegaSoft POS',
+    terminalId: 'POS-VIXY-8842',
+    surchargePercent: 0,
+    instructions: 'Cobro directo al conductor o en taquilla administrativa autorizada.',
+  },
+  customPaymentMethods: [
+    {
+      id: 'cpm-zinli',
+      name: 'Zinli Billetera Digital USD',
+      currency: 'USD',
+      identifier: 'zinli@vhixy.site',
+      holderName: 'Vixy Services Inc',
+      details: 'Envío instantáneo de saldo en dólares entre cuentas Zinli',
+      instructions: 'Enviar comprobante con el número de transacción de Zinli',
+      enabled: true,
+    },
+    {
+      id: 'cpm-wally',
+      name: 'Wally Tech',
+      currency: 'USD',
+      identifier: 'wally@vhixy.site',
+      holderName: 'Vixy C.A.',
+      details: 'Pagos mediante tarjeta digital o transferencia P2P Wally',
+      instructions: 'Adjuntar captura clara de la confirmación',
+      enabled: false,
+    },
+  ],
   gateways: {
     pagoMovil: true,
     zelle: true,
     binancePay: true,
+    bankTransfer: true,
     efectivo: true,
     tarjeta: false,
   },

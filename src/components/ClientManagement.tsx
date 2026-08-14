@@ -9,12 +9,14 @@ import {
   Phone,
   Mail,
   UserCheck,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { Client } from '../types';
 
 export const ClientManagement: React.FC = () => {
-  const { clients, config, toggleBlockClient, updateClientBalance } = useAdmin();
+  const { clients, config, toggleBlockClient, updateClientBalance, deleteClient } = useAdmin();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected client for modal
@@ -24,6 +26,10 @@ export const ClientManagement: React.FC = () => {
 
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
+
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   const filteredClients = clients.filter((c) => {
     if (!searchQuery.trim()) return true;
@@ -194,11 +200,22 @@ export const ClientManagement: React.FC = () => {
                   className={`p-2 rounded-xl border text-xs font-bold transition ${
                     client.isBlocked
                       ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
-                      : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+                      : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
                   }`}
                   title={client.isBlocked ? 'Desbloquear cliente' : 'Bloquear cliente'}
                 >
                   {client.isBlocked ? <Unlock className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setClientToDelete(client);
+                    setIsDeleteModalOpen(true);
+                  }}
+                  className="p-2 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition flex items-center justify-center"
+                  title="Eliminar pasajero permanentemente"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -274,6 +291,84 @@ export const ClientManagement: React.FC = () => {
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl text-xs"
               >
                 Abonar Saldo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CLIENT CONFIRMATION MODAL */}
+      {isDeleteModalOpen && clientToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-slate-800">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-900">
+                  Eliminar Pasajero / Cliente
+                </h3>
+                <p className="text-xs text-slate-500">
+                  ID de cuenta: #{clientToDelete.id}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Nombre Completo:</span>
+                <strong className="text-slate-900">{clientToDelete.name}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Teléfono:</span>
+                <span className="font-bold text-slate-900 font-mono">{clientToDelete.phone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Correo:</span>
+                <span className="text-slate-700">{clientToDelete.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Total Carreras:</span>
+                <span className="font-bold text-slate-900">{clientToDelete.totalTrips} viajes</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Saldo en Billetera:</span>
+                <span className="font-mono font-bold text-emerald-600">${clientToDelete.balanceUSD.toFixed(2)} USD</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-[11px] text-red-800 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <span>
+                ¿Confirmas la eliminación definitiva del cliente <strong>{clientToDelete.name}</strong>? Se borrará su historial de la plataforma.
+              </span>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setClientToDelete(null);
+                }}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (clientToDelete) {
+                    deleteClient(clientToDelete.id);
+                    setIsDeleteModalOpen(false);
+                    setClientToDelete(null);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-red-600/30 transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Confirmar Eliminación
               </button>
             </div>
           </div>

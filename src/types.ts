@@ -224,6 +224,59 @@ export interface PagoMovilConfig {
   cif: string; // RIF o Cédula
   phone: string;
   holderName: string;
+  instructions?: string;
+}
+
+export interface ZelleConfig {
+  email: string;
+  holderName: string;
+  phone?: string;
+  memoRequirement?: string;
+  instructions?: string;
+}
+
+export interface BinancePayConfig {
+  payId: string;
+  email?: string;
+  nickname?: string;
+  supportedNetworks?: string;
+  walletAddress?: string;
+  qrImageUrl?: string;
+  instructions?: string;
+}
+
+export interface BankTransferConfig {
+  bankName: string;
+  bankCode?: string;
+  accountNumber: string; // 20 dígitos
+  accountType: 'corriente' | 'ahorro';
+  cif: string;
+  holderName: string;
+  instructions?: string;
+}
+
+export interface CashPaymentConfig {
+  acceptedCurrencies: string[]; // ['USD', 'VES', 'EUR']
+  maxBillDenomination?: string;
+  instructions?: string;
+}
+
+export interface CardPosConfig {
+  processorName: string;
+  terminalId?: string;
+  surchargePercent?: number;
+  instructions?: string;
+}
+
+export interface CustomPaymentMethod {
+  id: string;
+  name: string;
+  currency: 'VES' | 'USD' | 'EUR' | 'USDT' | 'OTRA';
+  identifier: string;
+  holderName: string;
+  details?: string;
+  instructions?: string;
+  enabled: boolean;
 }
 
 export interface ApiInterconnectionConfig {
@@ -249,10 +302,17 @@ export interface SystemConfig {
   universityStateRates?: StateUniversityRatesMap; // Tarifas Universitarias especiales diferenciadas por Estado de Venezuela
   universityNationalEnabled?: boolean; // Interruptor Master Nacional para la Modalidad Tarifa Universitaria
   pagoMovil: PagoMovilConfig;
+  zelle?: ZelleConfig;
+  binancePay?: BinancePayConfig;
+  bankTransfer?: BankTransferConfig;
+  cashPayment?: CashPaymentConfig;
+  cardPos?: CardPosConfig;
+  customPaymentMethods?: CustomPaymentMethod[];
   gateways: {
     pagoMovil: boolean;
     zelle: boolean;
     binancePay: boolean;
+    bankTransfer?: boolean;
     efectivo: boolean;
     tarjeta: boolean;
   };

@@ -18,6 +18,7 @@ import {
   CompletedService,
   BrandingMedia,
   ApiInterconnectionConfig,
+  CustomPaymentMethod,
 } from '../types';
 import {
   INITIAL_SYSTEM_CONFIG,
@@ -38,16 +39,27 @@ import {
 interface AdminContextType {
   config: SystemConfig;
   updateConfig: (newConfig: Partial<SystemConfig>) => void;
+  updatePaymentGatewayConfig: (
+    gatewayKey: 'pagoMovil' | 'zelle' | 'binancePay' | 'bankTransfer' | 'cashPayment' | 'cardPos',
+    data: any,
+    enabled?: boolean
+  ) => void;
+  togglePaymentGateway: (gatewayKey: keyof SystemConfig['gateways']) => void;
+  addCustomPaymentMethod: (method: Omit<CustomPaymentMethod, 'id'>) => void;
+  updateCustomPaymentMethod: (id: string, methodPartial: Partial<CustomPaymentMethod>) => void;
+  deleteCustomPaymentMethod: (id: string) => void;
   
   drivers: Driver[];
   approveDriver: (driverId: string) => void;
   rejectDriver: (driverId: string, reason: string) => void;
   toggleBlockDriver: (driverId: string, reason?: string) => void;
+  deleteDriver: (driverId: string) => void;
   updateDriverBalance: (driverId: string, amountUSD: number) => void;
   notifyNegativeBalance: (driverId: string) => void;
   
   clients: Client[];
   toggleBlockClient: (clientId: string, reason?: string) => void;
+  deleteClient: (clientId: string) => void;
   updateClientBalance: (clientId: string, amountUSD: number) => void;
   
   payments: PaymentRecord[];
@@ -74,6 +86,7 @@ interface AdminContextType {
   addBackendUser: (user: Omit<BackendUser, 'id' | 'createdAt' | 'lastLogin'>) => void;
   updateBackendUserPermissions: (userId: string, permissions: BackendUserPermissions, role: AdminRole) => void;
   toggleBackendUserActive: (userId: string) => void;
+  deleteBackendUser: (userId: string) => void;
   updateBackendUserPassword: (userId: string, newPass: string, expirationDays?: 30 | 90) => void;
   
   currentBackendUser: BackendUser;
@@ -133,6 +146,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             commissionPercent: typeof parsed.commissionPercent === 'number' && !isNaN(parsed.commissionPercent) ? parsed.commissionPercent : INITIAL_SYSTEM_CONFIG.commissionPercent,
             negativeBalanceThreshold: typeof parsed.negativeBalanceThreshold === 'number' && !isNaN(parsed.negativeBalanceThreshold) ? parsed.negativeBalanceThreshold : INITIAL_SYSTEM_CONFIG.negativeBalanceThreshold,
             pagoMovil: { ...INITIAL_SYSTEM_CONFIG.pagoMovil, ...(parsed.pagoMovil || {}) },
+            zelle: { ...INITIAL_SYSTEM_CONFIG.zelle, ...(parsed.zelle || {}) },
+            binancePay: { ...INITIAL_SYSTEM_CONFIG.binancePay, ...(parsed.binancePay || {}) },
+            bankTransfer: { ...INITIAL_SYSTEM_CONFIG.bankTransfer, ...(parsed.bankTransfer || {}) },
+            cashPayment: { ...INITIAL_SYSTEM_CONFIG.cashPayment, ...(parsed.cashPayment || {}) },
+            cardPos: { ...INITIAL_SYSTEM_CONFIG.cardPos, ...(parsed.cardPos || {}) },
+            customPaymentMethods: Array.isArray(parsed.customPaymentMethods)
+              ? parsed.customPaymentMethods
+              : INITIAL_SYSTEM_CONFIG.customPaymentMethods || [],
             gateways: { ...INITIAL_SYSTEM_CONFIG.gateways, ...(parsed.gateways || {}) },
             stateRates: parsed.stateRates || INITIAL_STATE_RATES,
             universityStateRates: parsed.universityStateRates || INITIAL_UNIVERSITY_STATE_RATES,
@@ -373,6 +394,118 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Configuración actualizada exitosamente', 'success');
   };
 
+  const updatePaymentGatewayConfig = (
+    gatewayKey: 'pagoMovil' | 'zelle' | 'binancePay' | 'bankTransfer' | 'cashPayment' | 'cardPos',
+    data: any,
+    enabled?: boolean
+  ) => {
+    setConfig((prev) => {
+      const updatedGateways = { ...prev.gateways };
+      if (enabled !== undefined) {
+        if (gatewayKey === 'bankTransfer') {
+          updatedGateways.bankTransfer = enabled;
+        } else {
+          updatedGateways[gatewayKey] = enabled;
+        }
+      }
+      const updated = {
+        ...prev,
+        [gatewayKey]: { ...prev[gatewayKey], ...data },
+        gateways: updatedGateways,
+      };
+      return updated;
+    });
+
+    const labels: Record<string, string> = {
+      pagoMovil: 'Pago Móvil (VES)',
+      zelle: 'Zelle (USD)',
+      binancePay: 'Binance Pay (USDT)',
+      bankTransfer: 'Transferencia Bancaria (VES)',
+      cashPayment: 'Efectivo USD/VES',
+      cardPos: 'Tarjeta / POS',
+    };
+
+    addAuditLog(
+      'Edición Método de Pago',
+      'Configuración de Pagos',
+      `Actualizada la configuración y datos receptores de ${labels[gatewayKey] || gatewayKey}`
+    );
+    showToast(`Método de pago ${labels[gatewayKey] || gatewayKey} actualizado exitosamente`, 'success');
+  };
+
+  const togglePaymentGateway = (gatewayKey: keyof SystemConfig['gateways']) => {
+    const isCurrentlyActive = config.gateways[gatewayKey];
+    setConfig((prev) => {
+      const updated = {
+        ...prev,
+        gateways: {
+          ...prev.gateways,
+          [gatewayKey]: !prev.gateways[gatewayKey],
+        },
+      };
+      return updated;
+    });
+    addAuditLog(
+      'Cambio Estado Pasarela de Pago',
+      'Configuración de Pagos',
+      `Pasarela ${gatewayKey} cambiada a ${!isCurrentlyActive ? 'ACTIVA' : 'INACTIVA'}`
+    );
+    showToast(`Pasarela de pago ${!isCurrentlyActive ? 'activada' : 'desactivada'}`, 'info');
+  };
+
+  const addCustomPaymentMethod = (method: Omit<CustomPaymentMethod, 'id'>) => {
+    const newMethod: CustomPaymentMethod = {
+      ...method,
+      id: `cpm-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+    setConfig((prev) => {
+      const currentList = prev.customPaymentMethods || [];
+      return {
+        ...prev,
+        customPaymentMethods: [...currentList, newMethod],
+      };
+    });
+    addAuditLog(
+      'Creación Método de Pago Personalizado',
+      'Configuración de Pagos',
+      `Añadido nuevo método de pago: "${newMethod.name}" (${newMethod.currency})`
+    );
+    showToast(`Método de pago personalizado "${newMethod.name}" creado con éxito`, 'success');
+  };
+
+  const updateCustomPaymentMethod = (id: string, methodPartial: Partial<CustomPaymentMethod>) => {
+    setConfig((prev) => {
+      const currentList = prev.customPaymentMethods || [];
+      return {
+        ...prev,
+        customPaymentMethods: currentList.map((m) => (m.id === id ? { ...m, ...methodPartial } : m)),
+      };
+    });
+    addAuditLog(
+      'Edición Método de Pago Personalizado',
+      'Configuración de Pagos',
+      `Actualizado método de pago ID: ${id}`
+    );
+    showToast('Método de pago personalizado actualizado exitosamente', 'success');
+  };
+
+  const deleteCustomPaymentMethod = (id: string) => {
+    const method = config.customPaymentMethods?.find((m) => m.id === id);
+    setConfig((prev) => {
+      const currentList = prev.customPaymentMethods || [];
+      return {
+        ...prev,
+        customPaymentMethods: currentList.filter((m) => m.id !== id),
+      };
+    });
+    addAuditLog(
+      'Eliminación Método de Pago Personalizado',
+      'Configuración de Pagos',
+      `Eliminado método de pago personalizado: ${method?.name || id}`
+    );
+    showToast(`Método de pago "${method?.name || id}" eliminado`, 'warning');
+  };
+
   // Driver actions
   const approveDriver = (driverId: string) => {
     setDrivers((prev) =>
@@ -428,6 +561,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
     }
     showToast('Estado del conductor actualizado', 'info');
+  };
+
+  const deleteDriver = (driverId: string) => {
+    const drv = drivers.find((d) => d.id === driverId);
+    setDrivers((prev) => prev.filter((d) => d.id !== driverId));
+    if (drv) {
+      addAuditLog(
+        'Eliminación de Conductor',
+        'Gestión de Conductores',
+        `Conductor ${drv.name} (Cédula: ${drv.documents.cedulaNumber}, Placa: ${drv.documents.plateNumber}, Categoría: ${drv.category}) eliminado del sistema.`
+      );
+      showToast(`Conductor ${drv.name} eliminado exitosamente`, 'warning');
+    }
   };
 
   const updateDriverBalance = (driverId: string, amountUSD: number) => {
@@ -549,6 +695,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev.map((c) => (c.id === clientId ? { ...c, balanceUSD: c.balanceUSD + amountUSD } : c))
     );
     showToast(`Saldo del cliente ajustado en $${amountUSD.toFixed(2)}`, 'success');
+  };
+
+  const deleteClient = (clientId: string) => {
+    const cli = clients.find((c) => c.id === clientId);
+    setClients((prev) => prev.filter((c) => c.id !== clientId));
+    if (cli) {
+      addAuditLog(
+        'Eliminación de Pasajero',
+        'Gestión de Clientes',
+        `Cliente/Pasajero ${cli.name} (${cli.phone}, Email: ${cli.email}) eliminado del sistema.`
+      );
+      showToast(`Pasajero ${cli.name} eliminado exitosamente`, 'warning');
+    }
   };
 
   // Payment actions
@@ -765,6 +924,27 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Estado del usuario del backend modificado', 'info');
   };
 
+  const deleteBackendUser = (userId: string) => {
+    if (userId === 'usr-root') {
+      showToast('El usuario Root principal no puede ser eliminado', 'error');
+      return;
+    }
+    if (currentBackendUser && currentBackendUser.id === userId) {
+      showToast('No puedes eliminar la cuenta con la que has iniciado sesión actualmente', 'error');
+      return;
+    }
+    const usr = backendUsers.find((u) => u.id === userId);
+    setBackendUsers((prev) => prev.filter((u) => u.id !== userId));
+    if (usr) {
+      addAuditLog(
+        'Eliminación de Usuario Administrativo',
+        'Niveles de Acceso',
+        `Usuario administrativo ${usr.name} (${usr.email}, Rol: ${usr.role}) eliminado permanentemente.`
+      );
+      showToast(`Usuario administrativo ${usr.name} eliminado con éxito`, 'warning');
+    }
+  };
+
   // Auth & Root Password Functions
   const login = (usernameOrEmail: string, passInput: string) => {
     const cleanUser = usernameOrEmail.trim().toLowerCase();
@@ -900,14 +1080,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       value={{
         config,
         updateConfig,
+        updatePaymentGatewayConfig,
+        togglePaymentGateway,
+        addCustomPaymentMethod,
+        updateCustomPaymentMethod,
+        deleteCustomPaymentMethod,
         drivers,
         approveDriver,
         rejectDriver,
         toggleBlockDriver,
+        deleteDriver,
         updateDriverBalance,
         notifyNegativeBalance,
         clients,
         toggleBlockClient,
+        deleteClient,
         updateClientBalance,
         payments,
         verifyPayment,
@@ -927,6 +1114,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addBackendUser,
         updateBackendUserPermissions,
         toggleBackendUserActive,
+        deleteBackendUser,
         updateBackendUserPassword,
         currentBackendUser,
         setCurrentBackendUser,
