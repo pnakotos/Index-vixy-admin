@@ -1,0 +1,3 @@
+13f500b4802de98d80868fa1ec114bda8f6491cff819eb33785c47c43dcbba9c  release/vhixy-site-api.zip
+c52b1462c78ec8d4da515c4cdd3ea615b52e5a7c3173c925707f016796e2cb31  release/vhixy-site-database.zip
+7c8191d13c488ad81c124b901e70c4efd863e963ba9626cff5f57556b95e2bb3  release/vhixy-site-frontend.zip

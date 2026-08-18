@@ -1,0 +1,15 @@
+SET FOREIGN_KEY_CHECKS = 0;
+DELETE FROM `driver_notifications` WHERE `ride_id` LIKE 'ride-demo-%';
+DELETE FROM `ride_dispatch_attempts` WHERE `ride_id` LIKE 'ride-demo-%';
+DELETE FROM `ride_status_history` WHERE `ride_id` LIKE 'ride-demo-%';
+DELETE FROM `rides` WHERE `id` LIKE 'ride-demo-%';
+DELETE FROM `payments` WHERE `id` LIKE 'pay-%';
+DELETE FROM `emergency_alerts` WHERE `id` LIKE 'emg-%';
+DELETE FROM `reviews` WHERE `id` LIKE 'rev-%';
+DELETE FROM `audit_logs` WHERE `id` LIKE 'log-%';
+DELETE FROM `completed_services` WHERE `id` LIKE 'srv-%';
+DELETE FROM `push_notifications` WHERE `id` LIKE 'ntf-%';
+DELETE FROM `drivers` WHERE `id` LIKE 'drv-%';
+DELETE FROM `clients` WHERE `id` LIKE 'cli-%';
+DELETE FROM `backend_users` WHERE `id` LIKE 'usr-%';
+SET FOREIGN_KEY_CHECKS = 1;
