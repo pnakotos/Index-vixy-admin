@@ -12,6 +12,7 @@ Archivos SQL listos para importar en phpMyAdmin u otro gestor MySQL/MariaDB.
 - `07_seed_single_row_config.sql` — Crea las filas únicas de configuración si faltan.
 - `08_add_driver_auth_and_activity_logs.sql` — Agrega login propio de la app conductor (`password_hash`, `auth_token`, `device_token`) y la bitácora `driver_activity_logs`. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
 - `09_add_driver_services.sql` — Agrega `driver_services` para que un conductor ofrezca varios servicios (moto/taxi/delivery) a la vez, migrando su `category` actual como servicio inicial. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
+- `10_add_driver_wallet_transactions.sql` — Agrega `driver_wallet_transactions`, la billetera independiente por conductor (recargas, comisiones, ganancias, bonos) sincronizada con `drivers.balance_usd`. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
 
 
 ## Cómo importar en phpMyAdmin
@@ -29,7 +30,7 @@ será `vixyman@vhixy.site`, la clave temporal será `123456` y el cambio será o
 
 ## Tablas incluidas
 
-`drivers`, `driver_services`, `clients`, `payments`, `emergency_alerts`, `push_notifications`, `reviews`, `audit_logs`, `completed_services`, `backend_users`, `system_config`, `branding_media`, `api_interconnection_config`, `rides`, `ride_dispatch_attempts`, `ride_status_history`, `driver_notifications`, `driver_activity_logs`.
+`drivers`, `driver_services`, `clients`, `payments`, `emergency_alerts`, `push_notifications`, `reviews`, `audit_logs`, `completed_services`, `backend_users`, `system_config`, `branding_media`, `api_interconnection_config`, `rides`, `ride_dispatch_attempts`, `ride_status_history`, `driver_notifications`, `driver_activity_logs`, `driver_wallet_transactions`.
 
 ## Notas de seguridad
 

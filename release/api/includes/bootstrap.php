@@ -35,6 +35,7 @@ register_shutdown_function(static function (): void {
 require_once __DIR__ . '/Response.php';
 require_once __DIR__ . '/CrudHandler.php';
 require_once __DIR__ . '/DriverActivityLogger.php';
+require_once __DIR__ . '/WalletLedger.php';
 
 Response::applyCors();
 

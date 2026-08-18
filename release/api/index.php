@@ -12,5 +12,6 @@ echo json_encode([
         '/api/driver_auth.php?action=register', '/api/driver_auth.php?action=login',
         '/api/driver_auth.php?action=me', '/api/driver_auth.php?action=logout',
         '/api/driver_auth.php?action=update_device_token', '/api/driver_activity_logs.php',
+        '/api/wallet.php?action=summary', '/api/wallet.php?action=recharge',
     ],
 ]);

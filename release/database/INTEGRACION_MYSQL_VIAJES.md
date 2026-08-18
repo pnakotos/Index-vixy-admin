@@ -134,6 +134,34 @@ Esto crea el registro que el panel ve en el modulo "Emergencias" y, si `reporter
 
 Cada accion relevante (registro, login, logout, online/offline, aceptar/rechazar viaje, cambios de estado del viaje, emergencias) queda registrada automaticamente en `driver_activity_logs` por el backend (no requiere nada adicional desde la app). El panel puede consultarla de solo lectura en `php-api/api/driver_activity_logs.php` (sesion admin), opcionalmente filtrando por `driver_id`.
 
+## 9. Billetera (wallet) independiente por conductor
+
+Cada conductor tiene su propio historial en `driver_wallet_transactions`, ligado a `drivers.balance_usd` (siempre igual a la suma de sus movimientos). El backend la mantiene automaticamente:
+
+- Al completar un viaje (`rides.php?action=status` con `status=completed`), se calcula la comision segun `system_config.commission_percent`, se crea la fila en `completed_services` y se descuenta la comision de la billetera del conductor (`type = commission_fee`, monto negativo). El conductor se queda con el efectivo del viaje; solo la comision se refleja como deuda en el saldo.
+- Al verificar una recarga en `payments.php` (`PUT/PATCH ?id=...` con `status: "verificado"` y `type = driver_commission`), se abona el monto a la billetera (`type = recharge`) de forma atomica.
+
+La app conductor consulta su propia billetera con `php-api/api/wallet.php` (API key, sin sesion admin):
+
+```ts
+// Saldo + historial (recarga la pantalla de billetera con datos reales)
+const { data } = await fetch(
+  `${API_URL}/api/wallet.php?action=summary&driver_id=${driverId}`,
+  { headers: { 'X-Api-Key': API_KEY } },
+).then((r) => r.json());
+// data.balanceUsd, data.transactions
+
+// Enviar comprobante de recarga (queda pendiente de verificacion admin)
+await fetch(`${API_URL}/api/wallet.php?action=recharge`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+  body: JSON.stringify({
+    driverId, referenceNumber, paymentMethod: 'pago_movil',
+    amountUsd, amountVes, bcvRate, receiptImageUrl,
+  }),
+});
+```
+
 ## Seguridad y produccion
 
 - No incrustes una clave administrativa de larga duracion en una app movil distribuida. Usa un proxy del backend, tokens de corta duracion por usuario o una clave restringida por gateway.

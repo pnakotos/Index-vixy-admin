@@ -118,6 +118,78 @@ function driverName(PDO $conn, string $driverId): string
     return $row['name'] ?? $driverId;
 }
 
+function completeRideFinancials(PDO $conn, array $ride): void
+{
+    if (empty($ride['assigned_driver_id'])) {
+        return;
+    }
+
+    $driverStmt = $conn->prepare('SELECT * FROM drivers WHERE id = ? FOR UPDATE');
+    $driverStmt->execute([$ride['assigned_driver_id']]);
+    $driver = $driverStmt->fetch();
+    if (!$driver) {
+        return;
+    }
+
+    $configStmt = $conn->query('SELECT commission_percent FROM system_config WHERE id = 1 LIMIT 1');
+    $commissionPercent = (float) ($configStmt->fetch()['commission_percent'] ?? 0);
+
+    $fareUsd = (float) $ride['price_usd'];
+    $fareVes = (float) $ride['price_ves'];
+    $commissionUsd = round($fareUsd * $commissionPercent / 100, 2);
+    $commissionVes = round($fareVes * $commissionPercent / 100, 2);
+    $driverEarningsUsd = round($fareUsd - $commissionUsd, 2);
+
+    $clientName = $ride['passenger_user_id'];
+    $clientPhone = '';
+    if (!empty($ride['client_id'])) {
+        $clientStmt = $conn->prepare('SELECT name, phone FROM clients WHERE id = ? LIMIT 1');
+        $clientStmt->execute([$ride['client_id']]);
+        $client = $clientStmt->fetch();
+        if ($client) {
+            $clientName = $client['name'];
+            $clientPhone = $client['phone'];
+        }
+    }
+
+    $paymentMethodMap = [
+        'efectivo' => 'Efectivo', 'pago_movil' => 'Pago Móvil', 'zelle' => 'Zelle', 'saldo_vixy' => 'Saldo Vixy',
+    ];
+    $paymentMethod = $paymentMethodMap[strtolower((string) $ride['payment_method'])] ?? 'Efectivo';
+
+    $conn->prepare(
+        'INSERT INTO completed_services
+            (id, service_date, service_time, driver_id, driver_name, driver_category,
+             client_id, client_name, client_phone, origin, destination, fare_usd, fare_ves,
+             commission_percent, commission_usd, commission_ves, driver_earnings_usd, payment_method, status)
+         VALUES (?, CURDATE(), CURTIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'completado\')'
+    )->execute([
+        'srv-' . bin2hex(random_bytes(8)),
+        $driver['id'], $driver['name'], $driver['category'],
+        $ride['client_id'] ?: $ride['passenger_user_id'], $clientName, $clientPhone,
+        $ride['pickup_address'], $ride['dropoff_address'], $fareUsd, $fareVes,
+        $commissionPercent, $commissionUsd, $commissionVes, $driverEarningsUsd, $paymentMethod,
+    ]);
+
+    $conn->prepare('UPDATE drivers SET completed_trips = completed_trips + 1 WHERE id = ?')
+        ->execute([$driver['id']]);
+
+    if ($commissionUsd > 0) {
+        WalletLedger::applyTransaction(
+            $conn,
+            $driver['id'],
+            'commission_fee',
+            -$commissionUsd,
+            'Comisión (' . $commissionPercent . '%) del viaje ' . $ride['id'],
+            $ride['id'],
+            null,
+            -$commissionVes,
+            null,
+            'system'
+        );
+    }
+}
+
 function getRide(PDO $conn, string $rideId): void
 {
     $stmt = $conn->prepare(
@@ -272,9 +344,10 @@ if ($action === 'status' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $conn->beginTransaction();
     try {
-        $rideStmt = $conn->prepare('SELECT status FROM rides WHERE id = ? FOR UPDATE');
+        $rideStmt = $conn->prepare('SELECT * FROM rides WHERE id = ? FOR UPDATE');
         $rideStmt->execute([(string) $body['rideId']]);
-        if (!$rideStmt->fetch()) {
+        $ride = $rideStmt->fetch();
+        if (!$ride) {
             $conn->rollBack();
             Response::error('Viaje no encontrado', 404);
         }
@@ -291,6 +364,9 @@ if ($action === 'status' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             isset($body['actorId']) ? (string) $body['actorId'] : null,
             isset($body['details']) ? (string) $body['details'] : null
         );
+        if ($body['status'] === 'completed' && $ride['status'] !== 'completed') {
+            completeRideFinancials($conn, $ride);
+        }
         $conn->commit();
     } catch (Throwable $error) {
         if ($conn->inTransaction()) $conn->rollBack();

@@ -35,6 +35,7 @@ php-api/
     branding_media.php                          # branding/multimedia (fila única)
     api_config.php                               # interconexión con apps móviles (fila única)
     rides.php                                     # solicitudes, despacho y estados de viajes
+    wallet.php                                     # billetera independiente por conductor (saldo, historial, recargas)
   index.php                                         # health-check
   tools/create_admin.php                    # bootstrap CLI del primer administrador
   .htaccess
