@@ -15,9 +15,6 @@ import {
   Phone,
   Mail,
   UserCheck,
-  Smartphone,
-  RefreshCw,
-  Zap,
   Trash2,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
@@ -62,9 +59,6 @@ export const DriverManagement: React.FC<Props> = ({ initialFilter }) => {
   // Delete Driver Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
-
-  // App Simulation Modal
-  const [simulatedDriver, setSimulatedDriver] = useState<Driver | null>(null);
 
   // Filtered drivers
   const filteredDrivers = drivers.filter((d) => {
@@ -411,15 +405,6 @@ export const DriverManagement: React.FC<Props> = ({ initialFilter }) => {
                   </button>
 
                   <button
-                    onClick={() => setSimulatedDriver(driver)}
-                    className="py-2 px-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-md shadow-purple-600/30"
-                    title="Simular pantalla de la App del Conductor"
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    Simular App
-                  </button>
-
-                  <button
                     onClick={() => handleOpenBlockModal(driver)}
                     className={`p-2 rounded-xl border text-xs font-bold transition ${
                       driver.status === 'bloqueado'
@@ -451,122 +436,6 @@ export const DriverManagement: React.FC<Props> = ({ initialFilter }) => {
           })
         )}
       </div>
-
-      {/* DRIVER APP SIMULATION MODAL */}
-      {simulatedDriver && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-black border-2 border-purple-600 rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl text-white relative">
-            {/* Phone Top Notch */}
-            <div className="w-24 h-4 bg-zinc-900 rounded-b-xl mx-auto -mt-6 mb-2 border-b border-purple-900/50"></div>
-
-            <div className="flex justify-between items-center border-b border-purple-900/50 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
-                  V
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-white">VIXY CONDUCTOR</h3>
-                  <p className="text-[10px] text-purple-400">{simulatedDriver.name}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSimulatedDriver(null)}
-                className="text-zinc-400 hover:text-white text-xs bg-zinc-900 p-1.5 rounded-lg border border-purple-900/40"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Simulated Balance Box */}
-            <div className="p-4 rounded-2xl bg-zinc-900 border border-purple-900/60 text-center space-y-1">
-              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                Saldo de Billetera Vixy
-              </p>
-              <p
-                className={`text-2xl font-black font-mono ${
-                  simulatedDriver.balanceUSD <= config.negativeBalanceThreshold
-                    ? 'text-purple-400 animate-pulse'
-                    : 'text-white'
-                }`}
-              >
-                ${simulatedDriver.balanceUSD.toFixed(2)} USD
-              </p>
-              <p className="text-xs text-purple-300 font-mono">
-                ≈ {(simulatedDriver.balanceUSD * config.bcvRate).toFixed(2)} VES (Tasa BCV)
-              </p>
-            </div>
-
-            {/* App Status Banner based on -$0.50 threshold */}
-            {simulatedDriver.balanceUSD <= config.negativeBalanceThreshold ? (
-              <div className="p-4 rounded-2xl bg-purple-950/90 border border-purple-500 text-center space-y-2">
-                <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto">
-                  <ShieldAlert className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                  APLICACIÓN DESACTIVADA
-                </h4>
-                <p className="text-xs text-purple-200">
-                  Tu saldo llegó a <strong>${simulatedDriver.balanceUSD.toFixed(2)} USD</strong> (&le; -$0.50 USD). La aplicación ha sido desactivada automáticamente.
-                </p>
-                <div className="p-2 bg-black rounded-xl text-[11px] text-zinc-300 font-mono border border-purple-800">
-                  ⚠️ No puedes recibir viajes hasta realizar una recarga de saldo.
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-800 text-center space-y-2">
-                <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto">
-                  <Zap className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                  APLICACIÓN CONECTADA Y ACTIVA
-                </h4>
-                <p className="text-xs text-purple-300">
-                  Tu cuenta está en regla. Listo para recibir viajes de Taxi, Moto Taxi y Delivery.
-                </p>
-              </div>
-            )}
-
-            {/* Test Recharge & Commission Actions */}
-            <div className="space-y-2 pt-2 border-t border-purple-900/50">
-              <p className="text-[10px] text-purple-400 font-bold uppercase text-center">
-                Acciones de Simulación en Vivo:
-              </p>
-
-              {/* Recharge Button (Increases balance above -$0.50) */}
-              <button
-                onClick={() => {
-                  updateDriverBalance(simulatedDriver.id, 5.00);
-                  const updated = drivers.find((d) => d.id === simulatedDriver.id);
-                  if (updated) setSimulatedDriver({ ...updated, balanceUSD: updated.balanceUSD + 5.00 });
-                }}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-600/30 transition"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Recargar +$5.00 USD (Reactivar App)
-              </button>
-
-              {/* Deduct Commission (Lowers balance to trigger -$0.50 deactivation) */}
-              <button
-                onClick={() => {
-                  updateDriverBalance(simulatedDriver.id, -0.60);
-                  const updated = drivers.find((d) => d.id === simulatedDriver.id);
-                  if (updated) setSimulatedDriver({ ...updated, balanceUSD: updated.balanceUSD - 0.60 });
-                }}
-                className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-purple-300 font-bold border border-purple-900 rounded-xl text-xs flex items-center justify-center gap-2 transition"
-              >
-                <span>📉 Cobrar Comisión Carrera (-$0.60)</span>
-              </button>
-            </div>
-
-            <button
-              onClick={() => setSimulatedDriver(null)}
-              className="w-full py-2 bg-black text-zinc-400 hover:text-white rounded-xl text-xs font-bold border border-zinc-800"
-            >
-              Cerrar Vista de Simulación
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* DOCUMENT INSPECTION MODAL */}
       {isDocModalOpen && selectedDriver && (

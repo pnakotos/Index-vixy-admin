@@ -18,7 +18,6 @@ export const EmergencyAlertsView: React.FC = () => {
   const {
     emergencies,
     updateEmergencyStatus,
-    triggerSimulatedEmergency,
     soundEnabled,
     setSoundEnabled,
     setActiveTab,
@@ -61,13 +60,6 @@ export const EmergencyAlertsView: React.FC = () => {
             )}
           </button>
 
-          {/* Test Emergency Button */}
-          <button
-            onClick={() => triggerSimulatedEmergency('robo')}
-            className="px-4 py-2 bg-white text-red-700 hover:bg-red-50 font-black text-xs rounded-xl transition shadow-xs"
-          >
-            🚨 Simular Alerta de Robo
-          </button>
         </div>
       </div>
 

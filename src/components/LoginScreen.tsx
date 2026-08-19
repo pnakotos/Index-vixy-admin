@@ -24,7 +24,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onBackToWelcome }) => 
   const [passwordInput, setPasswordInput] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -33,7 +33,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onBackToWelcome }) => 
       return;
     }
 
-    const res = login(usernameInput, passwordInput);
+    const res = await login(usernameInput, passwordInput);
     if (!res.success) {
       setErrorMessage(res.message || 'Error al iniciar sesión.');
     }

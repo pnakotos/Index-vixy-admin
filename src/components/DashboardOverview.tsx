@@ -22,6 +22,7 @@ export const DashboardOverview: React.FC = () => {
     clients,
     payments,
     emergencies,
+    completedServices,
     setActiveTab,
     pendingPaymentsCount,
     pendingDriversCount,
@@ -34,10 +35,9 @@ export const DashboardOverview: React.FC = () => {
     .filter((p) => p.type === 'driver_commission' && p.status === 'verificado')
     .reduce((sum, p) => sum + p.amountUSD, 0);
 
-  // Simulated total trips revenue commission
-  const totalCompletedTrips = drivers.reduce((sum, d) => sum + d.completedTrips, 0);
-  const estimatedCommissionEarnedUSD = totalCompletedTrips * 0.75 + verifiedCommissionPaymentsUSD;
-  const estimatedCommissionEarnedVES = estimatedCommissionEarnedUSD * config.bcvRate;
+  const commissionFromCompletedTripsUSD = completedServices.reduce((sum, service) => sum + service.commissionUSD, 0);
+  const totalCommissionEarnedUSD = commissionFromCompletedTripsUSD + verifiedCommissionPaymentsUSD;
+  const totalCommissionEarnedVES = totalCommissionEarnedUSD * config.bcvRate;
 
   // Driver Debt (Negative balance total)
   const totalDriverDebtUSD = drivers
@@ -104,10 +104,10 @@ export const DashboardOverview: React.FC = () => {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-slate-900 font-mono">
-              ${estimatedCommissionEarnedUSD.toFixed(2)}
+              ${totalCommissionEarnedUSD.toFixed(2)}
             </p>
             <p className="text-xs font-bold text-emerald-600 mt-1 font-mono">
-              ≈ {estimatedCommissionEarnedVES.toLocaleString('es-VE', { maximumFractionDigits: 2 })} VES
+              ≈ {totalCommissionEarnedVES.toLocaleString('es-VE', { maximumFractionDigits: 2 })} VES
             </p>
           </div>
           <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1">

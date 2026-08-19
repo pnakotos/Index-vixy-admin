@@ -403,6 +403,23 @@ if ($action === 'location' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $stmt->execute([(float) $body['lat'], (float) $body['lng'], $body['isOnline'] ?? null, (string) $body['driverId']]);
 
+    $conn->prepare(
+        'INSERT INTO driver_location_history
+            (driver_id, lat, lng, location_name, is_online, ride_id)
+         VALUES (?, ?, ?, ?, ?, ?)'
+    )->execute([
+        (string) $body['driverId'], (float) $body['lat'], (float) $body['lng'],
+        $body['locationName'] ?? null,
+        array_key_exists('isOnline', $body) ? (int) (bool) $body['isOnline'] : null,
+        $body['rideId'] ?? null,
+    ]);
+
+    DriverActivityLogger::log(
+        $conn, (string) $body['driverId'], driverName($conn, (string) $body['driverId']),
+        'location_update', 'GPS', 'Posición GPS actualizada', $body['rideId'] ?? null,
+        (float) $body['lat'], (float) $body['lng']
+    );
+
     if ($onlineChanged) {
         DriverActivityLogger::log(
             $conn,

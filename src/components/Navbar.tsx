@@ -23,7 +23,6 @@ export const Navbar: React.FC = () => {
     unreadEmergenciesCount,
     pendingPaymentsCount,
     negativeBalanceDriversCount,
-    triggerSimulatedEmergency,
     currentBackendUser,
     logout,
     setIsChangePasswordModalOpen,

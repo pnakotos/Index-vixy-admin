@@ -22,20 +22,23 @@ import {
 } from '../types';
 import {
   INITIAL_SYSTEM_CONFIG,
-  INITIAL_DRIVERS,
-  INITIAL_CLIENTS,
-  INITIAL_PAYMENTS,
-  INITIAL_EMERGENCIES,
   INITIAL_REVIEWS,
   INITIAL_AUDIT_LOGS,
   INITIAL_BACKEND_USERS,
-  INITIAL_COMPLETED_SERVICES,
   INITIAL_BRANDING_MEDIA,
   INITIAL_API_CONFIG,
   INITIAL_STATE_RATES,
   INITIAL_UNIVERSITY_STATE_RATES,
   INITIAL_CONTACT_SOCIAL,
 } from '../data/mockData';
+import {
+  INITIAL_DRIVERS as PRODUCTION_DRIVERS,
+  INITIAL_CLIENTS as PRODUCTION_CLIENTS,
+  INITIAL_PAYMENTS as PRODUCTION_PAYMENTS,
+  INITIAL_EMERGENCIES as PRODUCTION_EMERGENCIES,
+  INITIAL_COMPLETED_SERVICES as PRODUCTION_COMPLETED_SERVICES,
+} from '../data/productionDefaults';
+import { adjustAdminWallet, fetchAdminRealtime, fetchConductorRealtime, loginAdmin, logoutAdmin, updateAdminResource, verifyAdminPayment } from '../utils/adminApi';
 
 interface AdminContextType {
   config: SystemConfig;
@@ -69,7 +72,6 @@ interface AdminContextType {
   
   emergencies: EmergencyAlert[];
   updateEmergencyStatus: (emergencyId: string, status: EmergencyStatus, notes?: string) => void;
-  triggerSimulatedEmergency: (type?: EmergencyType) => void;
   
   pushNotifications: PushNotification[];
   sendPushNotification: (notif: Omit<PushNotification, 'id' | 'sentAt' | 'sentBy'>) => void;
@@ -107,7 +109,7 @@ interface AdminContextType {
   setIsChangePasswordModalOpen: (open: boolean) => void;
   isWebGuideModalOpen: boolean;
   setIsWebGuideModalOpen: (open: boolean) => void;
-  login: (usernameOrEmail: string, passInput: string) => { success: boolean; mustChangePass?: boolean; message?: string };
+  login: (usernameOrEmail: string, passInput: string) => Promise<{ success: boolean; mustChangePass?: boolean; message?: string }>;
   logout: () => void;
   changeRootPassword: (oldPass: string, newPass: string) => { success: boolean; message: string };
 
@@ -128,6 +130,96 @@ interface AdminContextType {
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
+function mapDriver(row: Record<string, unknown>): Driver {
+  return {
+    id: String(row.id || ''), name: String(row.name || ''), email: String(row.email || ''),
+    phone: String(row.phone || ''), category: row.category as Driver['category'],
+    status: row.status as Driver['status'], balanceUSD: Number(row.balance_usd || 0),
+    rating: Number(row.rating || 0), completedTrips: Number(row.completed_trips || 0),
+    lat: Number(row.lat || 0), lng: Number(row.lng || 0), locationName: String(row.location_name || ''),
+    registeredAt: String(row.registered_at || ''), lastActive: String(row.last_active || ''),
+    isOnline: Boolean(Number(row.is_online || 0)), rejectionReason: row.rejection_reason as string | undefined,
+    blockReason: row.block_reason as string | undefined,
+    documents: {
+      cedulaUrl: String(row.doc_cedula_url || ''), cedulaNumber: String(row.doc_cedula_number || ''),
+      licenciaUrl: String(row.doc_licencia_url || ''), licenciaNumber: String(row.doc_licencia_number || ''),
+      certificadoMedicoUrl: String(row.doc_certificado_medico_url || ''), rcvUrl: String(row.doc_rcv_url || ''),
+      fotoVehiculoUrl: String(row.doc_foto_vehiculo_url || ''), plateNumber: String(row.doc_plate_number || ''),
+      vehicleModel: String(row.doc_vehicle_model || ''), vehicleYear: String(row.doc_vehicle_year || ''),
+      vehicleColor: String(row.doc_vehicle_color || ''),
+    },
+  };
+}
+
+function mapClient(row: Record<string, unknown>): Client {
+  return {
+    id: String(row.id || ''), name: String(row.name || ''), email: String(row.email || ''),
+    phone: String(row.phone || ''), balanceUSD: Number(row.balance_usd || 0),
+    totalTrips: Number(row.total_trips || 0), rating: Number(row.rating || 0),
+    isBlocked: Boolean(Number(row.is_blocked || 0)), blockReason: row.block_reason as string | undefined,
+    registeredAt: String(row.registered_at || ''), avatarUrl: row.avatar_url as string | undefined,
+  };
+}
+
+function mapPayment(row: Record<string, unknown>): PaymentRecord {
+  return {
+    id: String(row.id || ''), type: row.type as PaymentRecord['type'], entityId: String(row.entity_id || ''),
+    entityName: String(row.entity_name || ''), entityPhone: String(row.entity_phone || ''),
+    category: row.category as PaymentRecord['category'], referenceNumber: String(row.reference_number || ''),
+    paymentMethod: String(row.payment_method || ''), bankOrigin: row.bank_origin as string | undefined,
+    amountVES: Number(row.amount_ves || 0), amountUSD: Number(row.amount_usd || 0),
+    bcvRateUsed: Number(row.bcv_rate_used || 0), receiptImageUrl: String(row.receipt_image_url || ''),
+    createdAt: String(row.created_at || ''), status: row.status as PaymentRecord['status'],
+    verifiedBy: row.verified_by as string | undefined, verifiedAt: row.verified_at as string | undefined,
+    notes: row.notes as string | undefined,
+  };
+}
+
+function mapEmergency(row: Record<string, unknown>): EmergencyAlert {
+  return {
+    id: String(row.id || ''), type: row.type as EmergencyType, reporterType: row.reporter_type as EmergencyAlert['reporterType'],
+    reporterId: String(row.reporter_id || ''), reporterName: String(row.reporter_name || ''),
+    reporterPhone: String(row.reporter_phone || ''), category: row.category as EmergencyAlert['category'],
+    vehicleInfo: row.vehicle_info as string | undefined, plateNumber: row.plate_number as string | undefined,
+    locationName: String(row.location_name || ''), lat: Number(row.lat || 0), lng: Number(row.lng || 0),
+    timestamp: String(row.timestamp || ''), status: row.status as EmergencyStatus,
+    notes: row.notes as string | undefined, resolvedBy: row.resolved_by as string | undefined,
+  };
+}
+
+function mapCompletedService(row: Record<string, unknown>): CompletedService {
+  return {
+    id: String(row.id || ''), date: String(row.service_date || ''), time: String(row.service_time || ''),
+    driverId: String(row.driver_id || ''), driverName: String(row.driver_name || ''),
+    driverCategory: row.driver_category as CompletedService['driverCategory'], clientId: String(row.client_id || ''),
+    clientName: String(row.client_name || ''), clientPhone: String(row.client_phone || ''),
+    origin: String(row.origin || ''), destination: String(row.destination || ''), fareUSD: Number(row.fare_usd || 0),
+    fareVES: Number(row.fare_ves || 0), commissionPercent: Number(row.commission_percent || 0),
+    commissionUSD: Number(row.commission_usd || 0), commissionVES: Number(row.commission_ves || 0),
+    driverEarningsUSD: Number(row.driver_earnings_usd || 0), paymentMethod: row.payment_method as CompletedService['paymentMethod'],
+    status: 'completado',
+  };
+}
+
+function mapAdminUser(row: Record<string, unknown>): BackendUser {
+  return {
+    id: String(row.id || ''), name: String(row.name || ''), username: String(row.username || ''),
+    email: String(row.email || ''), role: row.role as AdminRole, avatarUrl: row.avatar_url as string | undefined,
+    isActive: Boolean(Number(row.is_active ?? 0)), createdAt: String(row.created_at || ''),
+    lastLogin: String(row.last_login || ''), mustChangePassword: Boolean(Number(row.must_change_password ?? 0)),
+    passwordExpirationDays: row.password_expiration_days as 30 | 90 | undefined,
+    passwordCreatedAt: row.password_created_at as string | undefined,
+    permissions: {
+      dashboard: Boolean(Number(row.perm_dashboard || 0)), drivers: Boolean(Number(row.perm_drivers || 0)),
+      clients: Boolean(Number(row.perm_clients || 0)), payments: Boolean(Number(row.perm_payments || 0)),
+      map: Boolean(Number(row.perm_map || 0)), emergencies: Boolean(Number(row.perm_emergencies || 0)),
+      financesConfig: Boolean(Number(row.perm_finances_config || 0)), earningsAudit: Boolean(Number(row.perm_earnings_audit || 0)),
+      notifications: Boolean(Number(row.perm_notifications || 0)), reviews: Boolean(Number(row.perm_reviews || 0)),
+      userManagement: Boolean(Number(row.perm_user_management || 0)), auditLogs: Boolean(Number(row.perm_audit_logs || 0)),
+    },
+  };
+}
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Persistence via localStorage or default fallback
@@ -170,23 +262,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [drivers, setDrivers] = useState<Driver[]>(() => {
-    const saved = localStorage.getItem('vixy_drivers');
-    return saved ? JSON.parse(saved) : INITIAL_DRIVERS;
+    return PRODUCTION_DRIVERS;
   });
 
   const [clients, setClients] = useState<Client[]>(() => {
-    const saved = localStorage.getItem('vixy_clients');
-    return saved ? JSON.parse(saved) : INITIAL_CLIENTS;
+    return PRODUCTION_CLIENTS;
   });
 
   const [payments, setPayments] = useState<PaymentRecord[]>(() => {
-    const saved = localStorage.getItem('vixy_payments');
-    return saved ? JSON.parse(saved) : INITIAL_PAYMENTS;
+    return PRODUCTION_PAYMENTS;
   });
 
   const [emergencies, setEmergencies] = useState<EmergencyAlert[]>(() => {
-    const saved = localStorage.getItem('vixy_emergencies');
-    return saved ? JSON.parse(saved) : INITIAL_EMERGENCIES;
+    return PRODUCTION_EMERGENCIES;
   });
 
   const [pushNotifications, setPushNotifications] = useState<PushNotification[]>(() => {
@@ -205,8 +293,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [completedServices, setCompletedServices] = useState<CompletedService[]>(() => {
-    const saved = localStorage.getItem('vixy_completed_services');
-    return saved ? JSON.parse(saved) : INITIAL_COMPLETED_SERVICES;
+    return PRODUCTION_COMPLETED_SERVICES;
   });
 
   const [backendUsers, setBackendUsers] = useState<BackendUser[]>(() => {
@@ -280,6 +367,42 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const [snapshot, conductorSnapshot] = await Promise.all([
+          fetchAdminRealtime(apiConfig.backendApiUrl, apiConfig.prodApiKey),
+          fetchConductorRealtime(apiConfig.backendApiUrl, apiConfig.prodApiKey),
+        ]);
+        if (cancelled) return;
+        setDrivers([...snapshot.drivers, ...(conductorSnapshot.available ? conductorSnapshot.drivers : [])].map(mapDriver));
+        setClients([...snapshot.clients, ...(conductorSnapshot.available ? conductorSnapshot.clients : [])].map(mapClient));
+        setPayments([...snapshot.payments, ...(conductorSnapshot.available ? conductorSnapshot.payments : [])].map(mapPayment));
+        setEmergencies([...snapshot.emergencies, ...(conductorSnapshot.available ? conductorSnapshot.emergencies : [])].map(mapEmergency));
+        setCompletedServices([...snapshot.completedServices, ...(conductorSnapshot.available ? conductorSnapshot.completedServices : [])].map(mapCompletedService));
+        setAuditLogs([...snapshot.activity, ...(conductorSnapshot.available ? conductorSnapshot.activity : [])].map((row) => ({
+          id: String(row.id || ''), timestamp: String(row.created_at || ''),
+          adminUser: String(row.driver_name || ''), adminRole: 'Conductor',
+          action: String(row.action || ''), module: String(row.module || 'App Conductor'),
+          details: String(row.details || ''), ipAddress: String(row.ip_address || ''),
+        })));
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('No se pudo actualizar el estado operativo desde MySQL:', error);
+          setIsAuthenticated(false);
+        }
+      }
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 3000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [apiConfig.backendApiUrl, apiConfig.prodApiKey, isAuthenticated]);
 
   useEffect(() => {
     localStorage.setItem('vixy_root_pass', rootPassword);
@@ -510,10 +633,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Driver actions
   const approveDriver = (driverId: string) => {
-    setDrivers((prev) =>
-      prev.map((d) => (d.id === driverId ? { ...d, status: 'activo', rejectionReason: undefined } : d))
-    );
     const drv = drivers.find((d) => d.id === driverId);
+    void updateAdminResource(apiConfig.backendApiUrl, apiConfig.prodApiKey, 'drivers', driverId, {
+      status: 'activo', rejection_reason: null,
+    }).then(() => {
+      setDrivers((prev) => prev.map((d) => (d.id === driverId ? { ...d, status: 'activo', rejectionReason: undefined } : d)));
+    }).catch(() => showToast('No se pudo aprobar el conductor en la base de datos', 'error'));
     if (drv) {
       addAuditLog(
         'Aprobación de Conductor',
@@ -525,10 +650,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const rejectDriver = (driverId: string, reason: string) => {
-    setDrivers((prev) =>
-      prev.map((d) => (d.id === driverId ? { ...d, status: 'rechazado', rejectionReason: reason } : d))
-    );
     const drv = drivers.find((d) => d.id === driverId);
+    void updateAdminResource(apiConfig.backendApiUrl, apiConfig.prodApiKey, 'drivers', driverId, {
+      status: 'rechazado', rejection_reason: reason,
+    }).then(() => {
+      setDrivers((prev) => prev.map((d) => (d.id === driverId ? { ...d, status: 'rechazado', rejectionReason: reason } : d)));
+    }).catch(() => showToast('No se pudo rechazar el conductor en la base de datos', 'error'));
     if (drv) {
       addAuditLog(
         'Rechazo de Conductor',
@@ -540,10 +667,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const toggleBlockDriver = (driverId: string, reason?: string) => {
+    const drv = drivers.find((d) => d.id === driverId);
+    if (!drv) return;
+    const isNowBlocked = drv.status !== 'bloqueado';
+    void updateAdminResource(apiConfig.backendApiUrl, apiConfig.prodApiKey, 'drivers', driverId, {
+      status: isNowBlocked ? 'bloqueado' : 'activo', block_reason: isNowBlocked ? reason || 'Bloqueado por el administrativo' : null,
+    }).then(() => {
     setDrivers((prev) =>
       prev.map((d) => {
         if (d.id === driverId) {
-          const isNowBlocked = d.status !== 'bloqueado';
           return {
             ...d,
             status: isNowBlocked ? 'bloqueado' : 'activo',
@@ -553,9 +685,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return d;
       })
     );
-    const drv = drivers.find((d) => d.id === driverId);
-    if (drv) {
-      const isBlocked = drv.status !== 'bloqueado';
+    {
+      const isBlocked = isNowBlocked;
       addAuditLog(
         isBlocked ? 'Bloqueo de Conductor' : 'Desbloqueo de Conductor',
         'Gestión de Conductores',
@@ -563,6 +694,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
     }
     showToast('Estado del conductor actualizado', 'info');
+    }).catch(() => showToast('No se pudo actualizar el conductor en la base de datos', 'error'));
   };
 
   const deleteDriver = (driverId: string) => {
@@ -579,6 +711,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateDriverBalance = (driverId: string, amountUSD: number) => {
+    void adjustAdminWallet(
+      apiConfig.backendApiUrl, apiConfig.prodApiKey, driverId, amountUSD, 'Ajuste iniciado desde el panel administrativo'
+    ).then(() => {
     setDrivers((prev) =>
       prev.map((d) => {
         if (d.id !== driverId) return d;
@@ -645,6 +780,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast(`Saldo del conductor ajustado en $${amountUSD.toFixed(2)} USD (Actual: $${calcBalance.toFixed(2)})`, 'success');
       }
     }
+    }).catch(() => showToast('No se pudo registrar el ajuste de wallet en la base de datos', 'error'));
   };
 
   const notifyNegativeBalance = (driverId: string) => {
@@ -716,26 +852,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const verifyPayment = (paymentId: string) => {
     const pay = payments.find((p) => p.id === paymentId);
     if (!pay) return;
-
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.id === paymentId
-          ? {
-              ...p,
-              status: 'verificado',
-              verifiedBy: currentBackendUser?.name || 'Administrador',
-              verifiedAt: new Date().toLocaleString('es-VE'),
-            }
-          : p
-      )
-    );
-
-    // Automatically increase balance of driver or client
-    if (pay.type === 'driver_commission') {
-      updateDriverBalance(pay.entityId, pay.amountUSD);
-    } else {
-      updateClientBalance(pay.entityId, pay.amountUSD);
-    }
+    void verifyAdminPayment(apiConfig.backendApiUrl, apiConfig.prodApiKey, paymentId, 'verificado').then(() => {
+      setPayments((prev) => prev.map((p) => p.id === paymentId ? {
+        ...p, status: 'verificado', verifiedBy: currentBackendUser?.name || 'Administrador',
+        verifiedAt: new Date().toLocaleString('es-VE'),
+      } : p));
+    }).catch(() => showToast('No se pudo verificar el pago en la base de datos', 'error'));
 
     addAuditLog(
       'Verificación de Pago',
@@ -749,20 +871,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const rejectPayment = (paymentId: string, reason: string) => {
     const pay = payments.find((p) => p.id === paymentId);
     if (!pay) return;
-
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.id === paymentId
-          ? {
-              ...p,
-              status: 'rechazado',
-              notes: `Rechazado: ${reason}`,
-              verifiedBy: currentBackendUser?.name || 'Administrador',
-              verifiedAt: new Date().toLocaleString('es-VE'),
-            }
-          : p
-      )
-    );
+    void verifyAdminPayment(apiConfig.backendApiUrl, apiConfig.prodApiKey, paymentId, 'rechazado', `Rechazado: ${reason}`).then(() => {
+      setPayments((prev) => prev.map((p) => p.id === paymentId ? {
+        ...p, status: 'rechazado', notes: `Rechazado: ${reason}`,
+        verifiedBy: currentBackendUser?.name || 'Administrador', verifiedAt: new Date().toLocaleString('es-VE'),
+      } : p));
+    }).catch(() => showToast('No se pudo rechazar el pago en la base de datos', 'error'));
 
     addAuditLog(
       'Rechazo de Pago',
@@ -775,6 +889,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Emergency actions
   const updateEmergencyStatus = (emergencyId: string, status: EmergencyStatus, notes?: string) => {
+    void updateAdminResource(apiConfig.backendApiUrl, apiConfig.prodApiKey, 'emergencies', emergencyId, {
+      status, notes, resolved_by: status === 'resuelto' ? currentBackendUser?.name || 'Administrador' : undefined,
+    }).then(() => {
     setEmergencies((prev) =>
       prev.map((e) =>
         e.id === emergencyId
@@ -787,6 +904,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : e
       )
     );
+    }).catch(() => showToast('No se pudo actualizar la emergencia en la base de datos', 'error'));
 
     const emg = emergencies.find((e) => e.id === emergencyId);
     if (emg) {
@@ -798,37 +916,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     showToast(`Estado de emergencia actualizado a: ${status.replace('_', ' ').toUpperCase()}`, 'info');
-  };
-
-  const triggerSimulatedEmergency = (type: EmergencyType = 'sos') => {
-    const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
-    const newEmergency: EmergencyAlert = {
-      id: `emg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      type,
-      reporterType: 'conductor',
-      reporterId: randomDriver.id,
-      reporterName: randomDriver.name,
-      reporterPhone: randomDriver.phone,
-      category: randomDriver.category,
-      vehicleInfo: `${randomDriver.documents.vehicleModel} - ${randomDriver.documents.plateNumber}`,
-      plateNumber: randomDriver.documents.plateNumber,
-      locationName: randomDriver.locationName,
-      lat: randomDriver.lat + (Math.random() - 0.5) * 0.01,
-      lng: randomDriver.lng + (Math.random() - 0.5) * 0.01,
-      timestamp: new Date().toLocaleString('es-VE'),
-      status: 'pendiente',
-      notes: 'ALERTA EN TIEMPO REAL enviada desde la App de Conductor Vixy',
-    };
-
-    setEmergencies((prev) => [newEmergency, ...prev]);
-
-    addAuditLog(
-      'ALERTA DE EMERGENCIA RECIBIDA',
-      'Alertas de Emergencia',
-      `🚨 ALERTA DE ${type.toUpperCase()} enviada por conductor ${randomDriver.name} en ${randomDriver.locationName}`
-    );
-
-    showToast(`🚨 NOUVA ALERTA DE EMERGENCIA: ${type.toUpperCase()} de ${randomDriver.name}!`, 'error');
   };
 
   // Push notifications
@@ -953,80 +1040,28 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Auth & Root Password Functions
-  const login = (usernameOrEmail: string, passInput: string) => {
-    const cleanUser = usernameOrEmail.trim().toLowerCase();
-
-    // Check if root user
-    if (cleanUser === 'root' || cleanUser === 'root@vhixy.site' || cleanUser === 'root@vixytaxi.com') {
-      if (passInput === rootPassword) {
-        const rootUser = backendUsers.find((u) => u.id === 'usr-root') || INITIAL_BACKEND_USERS[0];
-        setCurrentBackendUser(rootUser);
-        setIsAuthenticated(true);
-
-        if (rootPassword === '123456') {
-          setIsChangePasswordModalOpen(true);
-          showToast('⚠️ ATENCIÓN: Debes cambiar la clave por primera vez', 'warning');
-          return { success: true, mustChangePass: true, message: 'Ingreso como Root correcto. Debes cambiar la contraseña por primera vez.' };
-        }
-
-        showToast('¡Bienvenido Súperusuario Root!', 'success');
-        return { success: true, mustChangePass: false };
-      } else {
-        showToast('Contraseña incorrecta.', 'error');
-        return { success: false, message: 'Contraseña incorrecta.' };
-      }
-    }
-
-    // Check other backend users by username, email, or name
-    const foundUser = backendUsers.find(
-      (u) =>
-        (u.username && u.username.toLowerCase() === cleanUser) ||
-        u.email.toLowerCase() === cleanUser ||
-        u.name.toLowerCase().includes(cleanUser)
-    );
-
-    if (foundUser) {
-      if (!foundUser.isActive) {
-        showToast('Este usuario se encuentra inactivo.', 'error');
-        return { success: false, message: 'Usuario desactivado por la administración.' };
-      }
-
-      const expectedPass = foundUser.password || '123456';
-      if (passInput !== expectedPass) {
-        showToast('Contraseña incorrecta.', 'error');
-        return { success: false, message: 'Contraseña de acceso incorrecta.' };
-      }
-
-      // Check password expiration (30 or 90 days)
-      let isExpired = false;
-      if (foundUser.passwordCreatedAt && foundUser.passwordExpirationDays) {
-        const createdMs = new Date(foundUser.passwordCreatedAt).getTime();
-        const nowMs = new Date().getTime();
-        const diffDays = Math.floor((nowMs - createdMs) / (1000 * 60 * 60 * 24));
-        if (diffDays >= foundUser.passwordExpirationDays) {
-          isExpired = true;
-        }
-      }
-
-      setCurrentBackendUser(foundUser);
+  const login = async (usernameOrEmail: string, passInput: string) => {
+    try {
+      const rawUser = await loginAdmin(apiConfig.backendApiUrl, apiConfig.prodApiKey, usernameOrEmail.trim(), passInput);
+      const user = mapAdminUser(rawUser);
+      setCurrentBackendUser(user);
       setIsAuthenticated(true);
-
-      if (foundUser.mustChangePassword || isExpired) {
+      if (user.mustChangePassword) {
         setIsChangePasswordModalOpen(true);
-        const alertMsg = isExpired ? 'Tu contraseña ha expirado (límite alcanzado)' : 'Debes cambiar tu contraseña en tu primer inicio de sesión';
-        showToast(`⚠️ ${alertMsg}`, 'warning');
-        return { success: true, mustChangePass: true, message: alertMsg };
+        showToast('Debes cambiar tu contraseña en el primer inicio de sesión', 'warning');
+        return { success: true, mustChangePass: true, message: 'Debes cambiar tu contraseña.' };
       }
-
-      showToast(`Bienvenido, ${foundUser.name}`, 'success');
+      showToast(`Bienvenido, ${user.name}`, 'success');
       return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo iniciar sesión en el backend.';
+      showToast(message, 'error');
+      return { success: false, message };
     }
-
-    showToast('Usuario o correo no encontrado', 'error');
-    return { success: false, message: 'Credenciales inválidas.' };
   };
 
   const logout = () => {
+    void logoutAdmin(apiConfig.backendApiUrl, apiConfig.prodApiKey).catch(() => undefined);
     setIsAuthenticated(false);
     showToast('Sesión cerrada correctamente', 'info');
   };
@@ -1111,7 +1146,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         rejectPayment,
         emergencies,
         updateEmergencyStatus,
-        triggerSimulatedEmergency,
         pushNotifications,
         sendPushNotification,
         reviews,

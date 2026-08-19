@@ -27,7 +27,7 @@ export const EarningsAuditView: React.FC = () => {
 
   // Filters state
   const [periodFilter, setPeriodFilter] = useState<'diario' | 'mensual' | 'anual' | 'todos'>('diario');
-  const [selectedDate, setSelectedDate] = useState<string>('2026-07-24'); // default today in mock
+  const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [selectedMonth, setSelectedMonth] = useState<string>('2026-07');
   const [selectedYear, setSelectedYear] = useState<string>('2026');
   const [searchQuery, setSearchQuery] = useState<string>('');
