@@ -5,14 +5,12 @@ import { useAdmin } from '../context/AdminContext';
 export const ChangePasswordModal: React.FC = () => {
   const {
     changeRootPassword,
-    rootPassword,
     currentBackendUser,
-    mustChangePassword,
     isChangePasswordModalOpen,
     setIsChangePasswordModalOpen,
   } = useAdmin();
 
-  const isMandatory = mustChangePassword || currentBackendUser?.mustChangePassword;
+  const isMandatory = Boolean(currentBackendUser?.mustChangePassword);
 
   const [isDismissed, setIsDismissed] = useState(false);
   const [oldPasswordInput, setOldPasswordInput] = useState('');
@@ -29,7 +27,7 @@ export const ChangePasswordModal: React.FC = () => {
   const shouldShow = (isChangePasswordModalOpen || isMandatory) && (!isDismissed || isChangePasswordModalOpen);
   if (!shouldShow) return null;
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -53,7 +51,7 @@ export const ChangePasswordModal: React.FC = () => {
       return;
     }
 
-    const result = changeRootPassword(oldPasswordInput, newPasswordInput);
+    const result = await changeRootPassword(oldPasswordInput, newPasswordInput);
     if (!result.success) {
       setErrorMsg(result.message);
     } else {

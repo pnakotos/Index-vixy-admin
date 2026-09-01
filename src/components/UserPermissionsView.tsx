@@ -85,7 +85,7 @@ export const UserPermissionsView: React.FC = () => {
       email: emailInput.trim(),
       role: roleInput,
       isActive: true,
-      password: passwordInput.trim(),
+      password: passwordInput,
       mustChangePassword: mustChangePasswordInput,
       passwordExpirationDays: expirationDaysInput,
       permissions: permissionsInput,
@@ -106,7 +106,7 @@ export const UserPermissionsView: React.FC = () => {
 
     updateBackendUserPassword(
       editingUserForPassword.id,
-      newPasswordForUser.trim(),
+      newPasswordForUser,
       newExpirationForUser
     );
 

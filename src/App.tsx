@@ -16,42 +16,38 @@ import { UserPermissionsView } from './components/UserPermissionsView';
 import { AuditLogsView } from './components/AuditLogsView';
 import { ToastNotification } from './components/ToastNotification';
 import { LoginScreen } from './components/LoginScreen';
-import { WelcomeScreen } from './components/WelcomeScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { WebDeploymentGuideModal } from './components/WebDeploymentGuideModal';
 
 const MainContent: React.FC = () => {
-  const { activeTab } = useAdmin();
+  const { activeTab, currentBackendUser } = useAdmin();
+  const p = currentBackendUser?.permissions;
 
   return (
     <main className="flex-1 p-4 lg:p-6 overflow-y-auto max-w-7xl mx-auto w-full">
-      {activeTab === 'dashboard' && <DashboardOverview />}
-      {(activeTab === 'drivers' || activeTab === 'drivers_negative') && (
+      {activeTab === 'dashboard' && p?.dashboard && <DashboardOverview />}
+      {(activeTab === 'drivers' || activeTab === 'drivers_negative') && p?.drivers && (
         <DriverManagement initialFilter={activeTab} />
       )}
-      {activeTab === 'clients' && <ClientManagement />}
-      {activeTab === 'payments' && <PaymentVerification />}
-      {activeTab === 'map' && <MapView />}
-      {activeTab === 'emergencies' && <EmergencyAlertsView />}
-      {activeTab === 'financesConfig' && <FinancialSettings />}
-      {activeTab === 'earningsAudit' && <EarningsAuditView />}
-      {activeTab === 'notifications' && <PushNotificationsView />}
-      {activeTab === 'reviews' && <ReviewsPanel />}
-      {activeTab === 'userManagement' && <UserPermissionsView />}
-      {activeTab === 'auditLogs' && <AuditLogsView />}
+      {activeTab === 'clients' && p?.clients && <ClientManagement />}
+      {activeTab === 'payments' && p?.payments && <PaymentVerification />}
+      {activeTab === 'map' && p?.map && <MapView />}
+      {activeTab === 'emergencies' && p?.emergencies && <EmergencyAlertsView />}
+      {activeTab === 'financesConfig' && p?.financesConfig && <FinancialSettings />}
+      {activeTab === 'earningsAudit' && p?.earningsAudit && <EarningsAuditView />}
+      {activeTab === 'notifications' && p?.notifications && <PushNotificationsView />}
+      {activeTab === 'reviews' && p?.reviews && <ReviewsPanel />}
+      {activeTab === 'userManagement' && p?.userManagement && <UserPermissionsView />}
+      {activeTab === 'auditLogs' && p?.auditLogs && <AuditLogsView />}
     </main>
   );
 };
 
 const AppContainer: React.FC = () => {
   const { isAuthenticated } = useAdmin();
-  const [guestView, setGuestView] = React.useState<'welcome' | 'login'>('welcome');
 
   if (!isAuthenticated) {
-    if (guestView === 'welcome') {
-      return <WelcomeScreen onOpenAdminLogin={() => setGuestView('login')} />;
-    }
-    return <LoginScreen onBackToWelcome={() => setGuestView('welcome')} />;
+    return <LoginScreen />;
   }
 
   return (

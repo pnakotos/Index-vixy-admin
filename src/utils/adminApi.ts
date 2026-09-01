@@ -56,6 +56,51 @@ export function logoutAdmin(baseUrl: string, apiKey: string): Promise<{ loggedOu
   return adminApiRequest<{ loggedOut: boolean }>(baseUrl, apiKey, '/api/auth.php?action=logout', { method: 'POST' });
 }
 
+export function changePasswordAdmin(
+  baseUrl: string,
+  apiKey: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ passwordChanged: boolean }> {
+  return adminApiRequest<{ passwordChanged: boolean }>(baseUrl, apiKey, '/api/auth.php?action=change_password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
+export function fetchBackendUsers(baseUrl: string, apiKey: string): Promise<AdminApiUser[]> {
+  return adminApiRequest<AdminApiUser[]>(baseUrl, apiKey, '/api/users.php');
+}
+
+export function createBackendUserApi(
+  baseUrl: string,
+  apiKey: string,
+  body: Record<string, unknown>,
+): Promise<AdminApiUser> {
+  return adminApiRequest<AdminApiUser>(baseUrl, apiKey, '/api/users.php', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateBackendUserApi(
+  baseUrl: string,
+  apiKey: string,
+  userId: string,
+  body: Record<string, unknown>,
+): Promise<AdminApiUser> {
+  return adminApiRequest<AdminApiUser>(baseUrl, apiKey, `/api/users.php?id=${encodeURIComponent(userId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteBackendUserApi(baseUrl: string, apiKey: string, userId: string): Promise<{ deleted: boolean }> {
+  return adminApiRequest<{ deleted: boolean }>(baseUrl, apiKey, `/api/users.php?id=${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+  });
+}
+
 export function updateAdminResource(
   baseUrl: string,
   apiKey: string,
@@ -66,6 +111,99 @@ export function updateAdminResource(
   return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, `/api/${resource}.php?id=${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
+  });
+}
+
+export function fetchAdminResourceList(baseUrl: string, apiKey: string, resource: string): Promise<Record<string, unknown>[]> {
+  return adminApiRequest<Record<string, unknown>[]>(baseUrl, apiKey, `/api/${resource}.php`);
+}
+
+export function createAdminResource(
+  baseUrl: string,
+  apiKey: string,
+  resource: string,
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, `/api/${resource}.php`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteAdminResource(
+  baseUrl: string,
+  apiKey: string,
+  resource: string,
+  id: string,
+): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, `/api/${resource}.php?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function fetchSystemConfig(baseUrl: string, apiKey: string): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/system_config.php');
+}
+
+export function updateSystemConfig(baseUrl: string, apiKey: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/system_config.php', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchBrandingMediaApi(baseUrl: string, apiKey: string): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/branding_media.php');
+}
+
+export function updateBrandingMediaApi(baseUrl: string, apiKey: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/branding_media.php', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchApiInterconnectionConfig(baseUrl: string, apiKey: string): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/api_config.php');
+}
+
+export function updateApiInterconnectionConfig(baseUrl: string, apiKey: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/api_config.php', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchContactSocialConfig(baseUrl: string, apiKey: string): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/contact_social.php');
+}
+
+export function updateContactSocialConfig(baseUrl: string, apiKey: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminApiRequest<Record<string, unknown>>(baseUrl, apiKey, '/api/contact_social.php', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchStateRates(baseUrl: string, apiKey: string): Promise<Record<string, unknown>[]> {
+  return adminApiRequest<Record<string, unknown>[]>(baseUrl, apiKey, '/api/state_rates.php');
+}
+
+export function updateStateRates(baseUrl: string, apiKey: string, rows: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  return adminApiRequest<Record<string, unknown>[]>(baseUrl, apiKey, '/api/state_rates.php', {
+    method: 'PATCH',
+    body: JSON.stringify(rows),
+  });
+}
+
+export function fetchUniversityRates(baseUrl: string, apiKey: string): Promise<Record<string, unknown>[]> {
+  return adminApiRequest<Record<string, unknown>[]>(baseUrl, apiKey, '/api/university_rates.php');
+}
+
+export function updateUniversityRates(baseUrl: string, apiKey: string, rows: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  return adminApiRequest<Record<string, unknown>[]>(baseUrl, apiKey, '/api/university_rates.php', {
+    method: 'PATCH',
+    body: JSON.stringify(rows),
   });
 }
 

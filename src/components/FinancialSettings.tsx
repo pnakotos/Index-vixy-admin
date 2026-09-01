@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Settings,
   DollarSign,
@@ -247,6 +247,43 @@ export const FinancialSettings: React.FC = () => {
 
   // Toggle visibility for secret keys
   const [showApiKeys, setShowApiKeys] = useState(false);
+
+  // Re-sincroniza los campos locales cuando la configuración llega desde la base de
+  // datos (carga asíncrona posterior al login), para que no se queden vacíos/obsoletos.
+  useEffect(() => {
+    setBcvRateInput(config.bcvRate.toString());
+    setCommissionInput(config.commissionPercent.toString());
+    setThresholdInput(config.negativeBalanceThreshold.toString());
+    setAdminEmailInput(config.adminEmail);
+    setBaseFareInput((config.baseFareUSD ?? 2.00).toString());
+    setBaseDistanceInput((config.baseDistanceKm ?? 3.0).toString());
+    setAdditionalKmRateInput((config.additionalKmRateUSD ?? 0.50).toString());
+    setStateRates(config.stateRates || INITIAL_STATE_RATES);
+    setUniversityStateRates(config.universityStateRates || INITIAL_UNIVERSITY_STATE_RATES);
+    setUniversityNationalEnabled(config.universityNationalEnabled ?? true);
+    setPagoBank(config.pagoMovil.bankName);
+    setPagoPhone(config.pagoMovil.phone);
+    setPagoCif(config.pagoMovil.cif);
+    setPagoHolder(config.pagoMovil.holderName);
+    setGateways(config.gateways);
+  }, [config]);
+
+  useEffect(() => {
+    setTempBgImage(brandingMedia.backgroundImageUrl || brandingMedia.imageUrl);
+    setTempCardImage(brandingMedia.imageUrl);
+    setTempTitle(brandingMedia.videoTitle || 'Plataforma Oficial Vixy');
+  }, [brandingMedia]);
+
+  useEffect(() => {
+    setBackendUrlInput(apiConfig.backendApiUrl);
+    setProdApiKeyInput(apiConfig.prodApiKey);
+    setMapsApiKeyInput(apiConfig.googleMapsApiKey);
+    setWebhookSecretInput(apiConfig.paymentWebhookSecret);
+    setDriverSyncInput(apiConfig.driverAppSyncEndpoint);
+    setPassengerSyncInput(apiConfig.passengerAppSyncEndpoint);
+    setFcmKeyInput(apiConfig.fcmServerKey);
+    setIsProdMode(apiConfig.productionMode);
+  }, [apiConfig]);
 
   const handleSaveFinancials = (e: React.FormEvent) => {
     e.preventDefault();
@@ -2016,29 +2053,27 @@ export const FinancialSettings: React.FC = () => {
                   onChange={(e) => setProdApiKeyInput(e.target.value)}
                   placeholder="vixy_live_sec_..."
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
                 <p className="text-[10px] text-slate-500">
                   Usado para encriptación de payloads e interconexión segura.
                 </p>
               </div>
 
-              {/* Google Maps Platform API Key */}
+              {/* CARTO Basemaps API Key (mapa en vivo) */}
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-800 block flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-red-600" />
-                  Google Maps Platform API Key (Geolocalización):
+                  CARTO Basemaps API Key (Mapa en Vivo):
                 </label>
                 <input
                   type={showApiKeys ? 'text' : 'password'}
                   value={mapsApiKeyInput}
                   onChange={(e) => setMapsApiKeyInput(e.target.value)}
-                  placeholder="AIzaSy..."
+                  placeholder="cb1_..."
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
                 <p className="text-[10px] text-slate-500">
-                  Requerido para cálculo de distancias, autocomplete de direcciones y mapa en vivo.
+                  Clave de los mosaicos del mapa en vivo. Si se deja vacía, se usa la clave por defecto de la aplicación.
                 </p>
               </div>
 
@@ -2054,7 +2089,6 @@ export const FinancialSettings: React.FC = () => {
                   onChange={(e) => setWebhookSecretInput(e.target.value)}
                   placeholder="whsec_vixy_..."
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
                 <p className="text-[10px] text-slate-500">
                   Valida la autenticidad de notificaciones de pago enviadas por la API bancaria.
@@ -2072,7 +2106,6 @@ export const FinancialSettings: React.FC = () => {
                   onChange={(e) => setDriverSyncInput(e.target.value)}
                   placeholder="https://vhixy.site/v1/drivers/sync"
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
               </div>
 
@@ -2087,7 +2120,6 @@ export const FinancialSettings: React.FC = () => {
                   onChange={(e) => setPassengerSyncInput(e.target.value)}
                   placeholder="https://vhixy.site/v1/passengers/sync"
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
               </div>
 
@@ -2102,7 +2134,6 @@ export const FinancialSettings: React.FC = () => {
                   onChange={(e) => setFcmKeyInput(e.target.value)}
                   placeholder="AAAA..."
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                  required
                 />
               </div>
             </div>

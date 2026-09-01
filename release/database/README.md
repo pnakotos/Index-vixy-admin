@@ -13,6 +13,8 @@ Archivos SQL listos para importar en phpMyAdmin u otro gestor MySQL/MariaDB.
 - `08_add_driver_auth_and_activity_logs.sql` — Agrega login propio de la app conductor (`password_hash`, `auth_token`, `device_token`) y la bitácora `driver_activity_logs`. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
 - `09_add_driver_services.sql` — Agrega `driver_services` para que un conductor ofrezca varios servicios (moto/taxi/delivery) a la vez, migrando su `category` actual como servicio inicial. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
 - `10_add_driver_wallet_transactions.sql` — Agrega `driver_wallet_transactions`, la billetera independiente por conductor (recargas, comisiones, ganancias, bonos) sincronizada con `drivers.balance_usd`. Ejecutar una sola vez en instalaciones existentes; ya viene incluido en `01_schema.sql` para instalaciones nuevas.
+- `11_add_realtime_tracking.sql` — Agrega soporte de rastreo GPS en tiempo real. Ejecutar una sola vez en instalaciones existentes.
+- `12_add_extended_payment_and_config_tables.sql` — Agrega columnas de `system_config` para Zelle, Binance Pay, Transferencia Bancaria, Efectivo y POS, más el interruptor universitario nacional; y las tablas `contact_social_config` (contacto/redes), `custom_payment_methods`, `state_service_rates` y `state_university_rates` (tarifas por estado). Ejecutar una sola vez en instalaciones existentes.
 
 
 ## Cómo importar en phpMyAdmin
@@ -30,7 +32,7 @@ será `vixyman@vhixy.site`, la clave temporal será `123456` y el cambio será o
 
 ## Tablas incluidas
 
-`drivers`, `driver_services`, `clients`, `payments`, `emergency_alerts`, `push_notifications`, `reviews`, `audit_logs`, `completed_services`, `backend_users`, `system_config`, `branding_media`, `api_interconnection_config`, `rides`, `ride_dispatch_attempts`, `ride_status_history`, `driver_notifications`, `driver_activity_logs`, `driver_wallet_transactions`.
+`drivers`, `driver_services`, `clients`, `payments`, `emergency_alerts`, `push_notifications`, `reviews`, `audit_logs`, `completed_services`, `backend_users`, `system_config`, `branding_media`, `api_interconnection_config`, `contact_social_config`, `custom_payment_methods`, `state_service_rates`, `state_university_rates`, `rides`, `ride_dispatch_attempts`, `ride_status_history`, `driver_notifications`, `driver_activity_logs`, `driver_wallet_transactions`.
 
 ## Notas de seguridad
 

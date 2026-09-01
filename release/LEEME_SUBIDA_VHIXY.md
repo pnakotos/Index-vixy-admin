@@ -1,5 +1,29 @@
 # Publicacion en www.vhixy.site
 
+## Opcion rapida: instalacion completa desde cero (recomendada si public_html quedo vacio)
+
+Descomprime `vhixy-site-completo.zip` directamente dentro de `public_html/`. Ya trae
+la estructura final correcta en un solo paso:
+
+```
+public_html/index.html
+public_html/assets/...
+public_html/.htaccess, _redirects, vercel.json
+public_html/api/*.php
+public_html/api/config/config.local.php   <- YA CREADO, solo edítalo (ver abajo)
+public_html/api/config/, includes/, tools/, admin/
+```
+
+No dejes ninguna carpeta `frontend/` o `api/api/` intermedia: el contenido del zip
+va directo dentro de `public_html/`.
+
+Después de extraer, **edita `public_html/api/config/config.local.php`** y reemplaza
+`db_name`, `db_user`, `db_pass` con los datos reales de tu base MySQL (creada en
+cPanel > Bases de datos MySQL). El archivo ya trae una `api_key` aleatoria generada
+y los orígenes CORS de `vhixy.site` precargados; solo cambia si usas otro dominio.
+
+Si prefieres subir cada parte por separado, usa las opciones de abajo.
+
 ## Frontend
 
 Descomprime `vhixy-site-frontend.zip` directamente dentro de `public_html/`.
@@ -19,10 +43,13 @@ La URL publica sera:
 ## Configuracion obligatoria
 
 Crea manualmente `public_html/api/config/config.local.php` usando `config.example.php` como plantilla. Completa usuario, password, nombre de base de datos, API key y origenes permitidos. La API no usa credenciales de ejemplo: si falta este archivo responde HTTP 500.
+(Si usaste `vhixy-site-completo.zip`, este archivo ya viene creado — solo edítalo.)
 
 ## Base de datos
 
-Importa únicamente `01_schema.sql` en phpMyAdmin. La base queda deliberadamente sin registros ficticios.
+Importa `01_schema.sql` en phpMyAdmin, y luego `12_add_extended_payment_and_config_tables.sql`
+(agrega tablas de métodos de pago adicionales, contacto/redes y tarifas por estado). La base
+queda deliberadamente sin registros ficticios.
 
 ## Comprobaciones
 

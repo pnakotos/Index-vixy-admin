@@ -281,6 +281,7 @@ export const DriverManagement: React.FC<Props> = ({ initialFilter }) => {
               mototaxi: { name: 'Moto Taxi', emoji: '🏍️', bg: 'bg-purple-950 text-purple-200 border-purple-800' },
               delivery: { name: 'Delivery', emoji: '📦', bg: 'bg-purple-950 text-purple-200 border-purple-800' },
             };
+            const categoryLabel = categoryLabels[driver.category] || categoryLabels.taxi;
 
             return (
               <div
@@ -295,11 +296,11 @@ export const DriverManagement: React.FC<Props> = ({ initialFilter }) => {
                 <div className="flex items-center justify-between">
                   <span
                     className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border flex items-center gap-1 ${
-                      categoryLabels[driver.category].bg
+                      categoryLabel.bg
                     }`}
                   >
-                    <span>{categoryLabels[driver.category].emoji}</span>
-                    <span>{categoryLabels[driver.category].name}</span>
+                    <span>{categoryLabel.emoji}</span>
+                    <span>{categoryLabel.name}</span>
                   </span>
 
                   {isNegative ? (

@@ -1,4 +1,7 @@
 -- Ejecutar una sola vez en instalaciones existentes.
+-- Conserva cada posicion GPS recibida y permite consultar el estado vivo
+-- del conductor sin depender del valor sobrescrito en drivers.lat/lng.
+
 CREATE TABLE IF NOT EXISTS `driver_location_history` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `driver_id` VARCHAR(40) NOT NULL,

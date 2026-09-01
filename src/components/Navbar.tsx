@@ -119,6 +119,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Negative Balance Driver Alert Badge */}
+          {currentBackendUser?.permissions?.drivers && (
           <button
             onClick={() => setActiveTab('drivers_negative')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
@@ -134,8 +135,10 @@ export const Navbar: React.FC = () => {
               {negativeBalanceDriversCount}
             </span>
           </button>
+          )}
 
           {/* Emergency Alert Siren Badge */}
+          {currentBackendUser?.permissions?.emergencies && (
           <button
             onClick={() => setActiveTab('emergencies')}
             className={`relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
@@ -153,6 +156,7 @@ export const Navbar: React.FC = () => {
               </span>
             )}
           </button>
+          )}
 
           {/* Sound Toggle */}
           <button

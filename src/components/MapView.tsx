@@ -14,7 +14,7 @@ import { useAdmin } from '../context/AdminContext';
 import { DriverCategory } from '../types';
 
 export const MapView: React.FC = () => {
-  const { drivers, emergencies, config, setActiveTab } = useAdmin();
+  const { drivers, emergencies, config, setActiveTab, apiConfig } = useAdmin();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
@@ -35,9 +35,13 @@ export const MapView: React.FC = () => {
         zoomControl: true,
       });
 
-      // Dark Mode Map Tiles from OpenStreetMap / CartoDB Dark Matter
+      // Dark Mode Map Tiles from OpenStreetMap / CartoDB Voyager (requiere key propia para quitar la marca de agua)
+      const cartoApiKey =
+        apiConfig.googleMapsApiKey ||
+        import.meta.env.VITE_CARTO_API_KEY ||
+        'cb1_2or2_1_cfdc8f91393881d023074657';
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`,
         {
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
