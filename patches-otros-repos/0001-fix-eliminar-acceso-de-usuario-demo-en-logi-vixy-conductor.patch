@@ -1,0 +1,65 @@
+From bd411547f25ee06dcb4cd20f562ab8447075a0d5 Mon Sep 17 00:00:00 2001
+From: pnakotos <pierreleimbecille@gmail.com>
+Date: Tue, 1 Sep 2026 05:28:20 +0000
+Subject: [PATCH] fix: eliminar acceso de usuario demo en login de conductor
+
+---
+ src/components/LoginModal.tsx | 28 ++--------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
+
+diff --git a/src/components/LoginModal.tsx b/src/components/LoginModal.tsx
+index 17a0291..319842a 100644
+--- a/src/components/LoginModal.tsx
++++ b/src/components/LoginModal.tsx
+@@ -1,8 +1,8 @@
+ import React, { useState } from 'react';
+ import { DriverProfile } from '../types';
+-import { createNewDriverProfile, INITIAL_DRIVER_PROFILE } from '../data/mockData';
++import { createNewDriverProfile } from '../data/mockData';
+ import { syncDriverProfileToFirebase } from '../services/firebaseSyncService';
+-import { UserCheck, ShieldCheck, LogIn, Lock, Bike, Car, Package, UserPlus, Sparkles } from 'lucide-react';
++import { UserCheck, ShieldCheck, LogIn, Lock, Bike, Car, Package, UserPlus } from 'lucide-react';
+ 
+ interface LoginModalProps {
+   isOpen: boolean;
+@@ -113,18 +113,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
+     onLoginSuccess(newProfile);
+   };
+ 
+-  const handleLoadDemoUser = () => {
+-    const demoProfile = {
+-      ...INITIAL_DRIVER_PROFILE,
+-      fullName: 'Carlos Eduardo Mendoza',
+-      cedula: 'V-20.145.890',
+-      phone: '+58 412-9882233',
+-      hasInitialRecharge: true,
+-    };
+-    localStorage.setItem('vixy_driver_profile', JSON.stringify(demoProfile));
+-    onLoginSuccess(demoProfile);
+-  };
+-
+   return (
+     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+       <div className="relative w-full max-w-md bg-zinc-900 border-2 border-purple-600 rounded-3xl p-6 shadow-2xl text-zinc-100 space-y-5">
+@@ -312,18 +300,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
+           </form>
+         )}
+ 
+-        {/* Quick Demo Pre-fill Option for testing */}
+-        <div className="pt-2 border-t border-zinc-800 text-center">
+-          <button
+-            type="button"
+-            onClick={handleLoadDemoUser}
+-            className="text-[11px] text-zinc-400 hover:text-purple-300 font-semibold underline decoration-dotted flex items-center justify-center gap-1 mx-auto"
+-          >
+-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+-            <span>Cargar Datos de Prueba Rápida (Demo)</span>
+-          </button>
+-        </div>
+-
+       </div>
+     </div>
+   );
+-- 
+2.53.0
+

@@ -9,9 +9,13 @@ echo json_encode([
         '/api/notifications.php', '/api/reviews.php', '/api/audit_logs.php',
         '/api/completed_services.php', '/api/users.php', '/api/system_config.php',
         '/api/branding_media.php', '/api/api_config.php', '/api/rides.php', '/api/version.php',
+        '/api/contact_social.php', '/api/custom_payment_methods.php',
+        '/api/state_rates.php', '/api/university_rates.php',
         '/api/driver_auth.php?action=register', '/api/driver_auth.php?action=login',
         '/api/driver_auth.php?action=me', '/api/driver_auth.php?action=logout',
         '/api/driver_auth.php?action=update_device_token', '/api/driver_activity_logs.php',
+        '/api/client_auth.php?action=register', '/api/client_auth.php?action=login',
+        '/api/client_auth.php?action=me', '/api/client_auth.php?action=logout',
         '/api/wallet.php?action=summary', '/api/wallet.php?action=recharge',
     ],
 ]);
