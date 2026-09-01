@@ -215,6 +215,7 @@ CREATE TABLE IF NOT EXISTS `completed_services` (
 CREATE TABLE IF NOT EXISTS `backend_users` (
   `id` VARCHAR(40) NOT NULL,
   `name` VARCHAR(150) NOT NULL,
+  `username` VARCHAR(80) NOT NULL,
   `email` VARCHAR(150) NOT NULL,
   `role` ENUM('Super Admin','Finanzas','Despacho y Soporte','Verificador') NOT NULL,
   `avatar_url` VARCHAR(500) DEFAULT NULL,

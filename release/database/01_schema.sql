@@ -215,6 +215,7 @@ CREATE TABLE IF NOT EXISTS `completed_services` (
 CREATE TABLE IF NOT EXISTS `backend_users` (
   `id` VARCHAR(40) NOT NULL,
   `name` VARCHAR(150) NOT NULL,
+  `username` VARCHAR(80) NOT NULL,
   `email` VARCHAR(150) NOT NULL,
   `role` ENUM('Super Admin','Finanzas','Despacho y Soporte','Verificador') NOT NULL,
   `avatar_url` VARCHAR(500) DEFAULT NULL,
@@ -441,6 +442,9 @@ CREATE TABLE IF NOT EXISTS `driver_activity_logs` (
   CONSTRAINT `fk_driver_activity_driver` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---------------------------------------------------------------------
+-- Tabla: driver_location_history (GPS historico en tiempo real)
+-- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `driver_location_history` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `driver_id` VARCHAR(40) NOT NULL,
