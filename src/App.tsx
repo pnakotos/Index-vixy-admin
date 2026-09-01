@@ -17,7 +17,6 @@ import { AuditLogsView } from './components/AuditLogsView';
 import { ToastNotification } from './components/ToastNotification';
 import { LoginScreen } from './components/LoginScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
-import { WebDeploymentGuideModal } from './components/WebDeploymentGuideModal';
 
 const MainContent: React.FC = () => {
   const { activeTab, currentBackendUser } = useAdmin();
@@ -58,7 +57,6 @@ const AppContainer: React.FC = () => {
         <MainContent />
       </div>
       <ChangePasswordModal />
-      <WebDeploymentGuideModal />
       <ToastNotification />
     </div>
   );

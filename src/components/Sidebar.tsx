@@ -26,7 +26,6 @@ export const Sidebar: React.FC = () => {
     pendingDriversCount,
     negativeBalanceDriversCount,
     currentBackendUser,
-    setIsWebGuideModalOpen,
   } = useAdmin();
 
   const p = currentBackendUser?.permissions || {

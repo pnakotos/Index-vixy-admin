@@ -403,15 +403,6 @@ export const FinancialSettings: React.FC = () => {
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => setIsWebGuideModalOpen(true)}
-          className="px-3.5 py-2 rounded-xl bg-purple-950 hover:bg-purple-900 border border-purple-800 text-purple-200 hover:text-white text-xs font-bold flex items-center gap-2 transition shrink-0"
-        >
-          <Globe className="w-4 h-4 text-purple-400" />
-          <span>Guía de Despliegue Web</span>
-          <ExternalLink className="w-3.5 h-3.5" />
-        </button>
       </div>
 
       {/* Navigation Sub-Tabs */}
@@ -2122,32 +2113,9 @@ export const FinancialSettings: React.FC = () => {
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
-
-              {/* FCM Server Key */}
-              <div className="space-y-1.5 md:col-span-2">
-                <label className="font-bold text-slate-800 block">
-                  Firebase Cloud Messaging (FCM) Server Key (Push Notifications):
-                </label>
-                <input
-                  type={showApiKeys ? 'text' : 'password'}
-                  value={fcmKeyInput}
-                  onChange={(e) => setFcmKeyInput(e.target.value)}
-                  placeholder="AAAA..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                />
-              </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setIsWebGuideModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 font-bold text-xs flex items-center gap-2 transition"
-              >
-                <Globe className="w-4 h-4" />
-                <span>Ver Instrucciones de Despliegue Web</span>
-              </button>
-
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100">
               <button
                 type="submit"
                 className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-xs transition cursor-pointer"

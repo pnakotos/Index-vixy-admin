@@ -26,7 +26,6 @@ export const Navbar: React.FC = () => {
     currentBackendUser,
     logout,
     setIsChangePasswordModalOpen,
-    setIsWebGuideModalOpen,
     soundEnabled,
     setSoundEnabled,
     setActiveTab,
