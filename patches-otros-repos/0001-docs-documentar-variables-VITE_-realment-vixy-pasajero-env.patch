@@ -1,0 +1,27 @@
+From 9e9080bc14ce86660af8c67897fa385994024341 Mon Sep 17 00:00:00 2001
+From: pnakotos <pierreleimbecille@gmail.com>
+Date: Tue, 1 Sep 2026 07:01:17 +0000
+Subject: [PATCH] docs: documentar variables VITE_ realmente usadas por
+ vixyApi.ts
+
+---
+ .env.example | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/.env.example b/.env.example
+index d462ea5..b3f48d1 100644
+--- a/.env.example
++++ b/.env.example
+@@ -14,3 +14,9 @@ VIXY_INTERCONNECT_KEY="vixy_sec_app_key_2026_interconnect_token"
+ # Administrative Platform Integration URL & Key (https://vhixy.site/)
+ VHIXY_ADMIN_URL="https://vhixy.site"
+ VHIXY_ADMIN_API_KEY="vixy_admin_sec_2026_key"
++
++# Variables reales usadas por src/services/vixyApi.ts (deben tener el prefijo
++# VITE_ para que Vite las exponga al navegador). Debe ser la MISMA clave
++# configurada en php-api/config/config.local.php del panel admin.
++VITE_ADMIN_BASE_URL="https://www.vhixy.site"
++VITE_INTERCONNECTION_KEY=
+-- 
+2.53.0
+
