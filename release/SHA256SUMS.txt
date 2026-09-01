@@ -1,4 +1,4 @@
 07033b55818ccb35c01bc6e77fd442711800281d8590b5056013c27ff0a59b16  release/vhixy-site-api.zip
-ca8fb0ea5e69e888ca527da71d9be8fe1fae4fe1bec49c1f31afb2b9b8507d8a  release/vhixy-site-database.zip
+4ed65767abd5f4de59cb784c5ff782f7d1972f36a6f354247e09a4ae8d7e2d43  release/vhixy-site-database.zip
 26273d6387443c8fd5c8864218f14249acc4c498af68ddb351334b1192ccac5e  release/vhixy-site-frontend.zip
 9645afbaa83e3617654e1a0c65d0bed732e2a39c0923f2e69b59e0add84e57ff  release/vhixy-site-completo.zip
